@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html style="width:100%;height:100%;background-color:black;">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+<meta name="description" content="ActX 1.8.8 Offline-Goon" />
+<meta name="keywords" content="eaglercraft, eaglercraftx, minecraft, 1.8, 1.8.8, MOD-Port, ActX" />
+<title>ActX 1.8.8</title>
+<meta property="og:locale" content="en-US" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="ActX 1.8.8 MOD-Port Offline" />
+<meta property="og:description" content="" />
+<script type="text/javascript">
+"use strict";
+window.eaglercraftXOpts = {
+    container: "game_frame",
+    worldsDB: "worlds",
+    relays: [
+        { addr: "wss://ws.imc.re/relay", comment: "IMC relay #1", primary: true },
+        { addr: "wss://mc.smgoro.com/relay", comment: "IMC relay #2", primary: false },
+        { addr: "wss://play.imc.re:441/relay", comment: "IMC relay #3", primary: false },
+        { addr: "wss://relay.webmc.fun", comment: "Random #1", primary: false },
+        { addr: "wss://relay.deev.is", comment: "lax1dude relay #1", primary: false },
+        { addr: "wss://relay.lax1dude.net", comment: "lax1dude relay #2", primary: false },
+        { addr: "wss://relay.shhnowisnottheti.me", comment: "ayunami relay #1", primary: false },
+        { addr: "wss://colour-devel-porcelain-topic.trycloudflare.com", comment: "NOSEISA's Public LAN", primary: false}
+    ]
+};
+</script>
+<script type="text/javascript">
+"use strict";
+
+window.eaglerTranslateQueue = window.eaglerTranslateQueue || [];
+window.eaglerTranslate = function(text, targetLang) {
+    if (!text || !text.trim()) return;
+    var tl = targetLang || "en";
+
+    var url = "https://translate.googleapis.com/translate_a/single"
+        + "?client=gtx&sl=auto&tl=" + encodeURIComponent(tl)
+        + "&dt=t&q=" + encodeURIComponent(text);
+
+    fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data[0]) {
+                var trans = "";
+                for (var i = 0; i < data[0].length; i++) {
+                    if (data[0][i] && data[0][i][0]) trans += data[0][i][0];
+                }
+                if (trans) window.eaglerTranslateQueue.push(trans);
+            }
+        })
+        .catch(function(err) {
+            console.warn("[ActTranslate] fetch failed:", err);
+            // niggerrrr
+        });
+};
+</script>
+<script type="text/javascript">
+"use strict";
+if(typeof window !== "undefined") window.eaglercraftXClientScriptElement = document.currentScript;
+${classes_js}
+</script>
+<script type="text/javascript">
+"use strict";
+(function(){
+	window.eaglercraftXOpts.assetsURI = ${assets_epk};
+	window.addEventListener("load", function() {
+		main();
+	});
+})();
+</script>
+<link type="image/png" rel="shortcut icon" href="data:image/png;base64,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" />
+</head>
+<body style="margin:0px;width:100%;height:100%;overflow:hidden;background-color:black;" id="game_frame">
+</body>
+</html>

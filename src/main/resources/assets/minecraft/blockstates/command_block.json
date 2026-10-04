@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "mode=0": { "model": "command_block" },
+        "mode=1": { "model": "repeating_command_block" },
+        "mode=2": { "model": "chain_command_block" },
+        "normal": { "model": "command_block" }
+    }
+}

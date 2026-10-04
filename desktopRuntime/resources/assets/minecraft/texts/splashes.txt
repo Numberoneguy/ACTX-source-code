@@ -1,0 +1,3 @@
+Jenny mod has been ported into this client.
+/kill all
+give @p command_block 1 0 {display:{Name:"&fMr. &6&lCommand-Block&r"},BlockEntityTag:{Command:"execute @a ~ ~ ~ tellraw @a [{"text":"Come to 867 65 -142 for a free donut","color":"yellow":true},{"text":"Very true indeed and must come!"}]

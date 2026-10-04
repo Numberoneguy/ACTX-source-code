@@ -60,6 +60,19 @@ public final class actxmiscdata {
     }
     private static final Map<String, AnimationDef> animations = new HashMap<String, AnimationDef>();
     private actxmiscdata() {}
+    public static boolean isBanned(String name) {
+        String lower = name.toLowerCase();
+        if (session_bans.contains(lower)) {
+            return true;
+        }
+        for (String entry : session_bans) {
+            if ((entry.indexOf('*') >= 0 || entry.indexOf('?') >= 0)
+                    && net.minecraft.command.CommandBan.globglob(entry, lower)) {
+                return true;
+            }
+        }
+        return false;
+    }
     public static void ensureLoaded() {
         MinecraftServer server = MinecraftServer.getServer();
         ensureLoaded(server != null ? server.getConfigurationManager() : null);

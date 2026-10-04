@@ -80,7 +80,7 @@ public class NetHandlerLoginServer implements INetHandlerLoginServer, ITickable 
             if (this.loginGameProfile != null) {
                 String s = this.loginGameProfile.getName();
                 if (s == null || s.length() < 3 || s.length() > 16 || s.contains("§") || !s.matches("^[a-zA-Z0-9_]+$")) {
-                    this.closeConnection("Invalid username");
+                    this.closeConnection(net.minecraft.util.StatCollector.translateToLocal("act.invalid.username"));
                     return; // Stop execution here so tryAcceptPlayer() never runs (this was patched in v1.6.1)
                 }
             }
@@ -124,9 +124,7 @@ public class NetHandlerLoginServer implements INetHandlerLoginServer, ITickable 
 
 	public void tryAcceptPlayer() {
         if (this.loginGameProfile != null && this.loginGameProfile.getName() != null) {
-            String bannedName = this.loginGameProfile.getName().toLowerCase();
-            
-            if (actxmiscdata.session_bans.contains(bannedName)) {
+            if (actxmiscdata.isBanned(this.loginGameProfile.getName())) {
                 String reason = net.minecraft.util.StatCollector.translateToLocal("act.banned.user");
                 this.closeConnection(reason);
                 return;

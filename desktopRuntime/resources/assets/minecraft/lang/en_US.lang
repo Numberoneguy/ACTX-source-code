@@ -3796,3 +3796,9 @@ commands.scoreboard.objectives.load.invalidCriteria=Saved objective '%1$s' has a
 commands.scoreboard.objectives.load.invalid=Saved objective '%1$s' is invalid (bad name or display name)
 
 # oh dear lord when will someone solve problems for this file now
+
+act.invalid.username=Invalid username
+commands.ban.wildcard.plain=This needs at least 2 non wildcard characters.
+commands.ban.wildcard.nomatch=No online players match '%s'
+commands.ban.wildcard.success=Banned %s online players and blocked joins matching '%s': %s
+commands.unban.pattern=%s is blocked since there's a pattern '%s'.

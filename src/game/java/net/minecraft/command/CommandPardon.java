@@ -46,7 +46,6 @@ public class CommandPardon extends CommandBase {
         String lowerCaseName = targetName.toLowerCase();
 
         if (!actxmiscdata.session_bans.contains(lowerCaseName)) {
-            // Not banned directly: tell the operator if a wildcard pattern is what's blocking them
             for (String entry : actxmiscdata.session_bans) {
                 if ((entry.indexOf('*') >= 0 || entry.indexOf('?') >= 0)
                         && CommandBan.globglob(entry, lowerCaseName)) {

@@ -63,11 +63,22 @@ public class CommandBlock extends CommandBase {
         }
 
         String target = args[0].toLowerCase().trim();
+
+        boolean forceToggle = false;
+        if (target.equals("toggle")) {
+            if (args.length < 2) {
+                actxchatutils.sendError(sender, getCommandUsage(sender));
+                return;
+            }
+            target = args[1].toLowerCase().trim();
+            forceToggle = true;
+        }
+
         if (target.startsWith("/")) {
             target = target.substring(1);
         }
 
-        if (target.equals("list")) {
+        if (!forceToggle && target.equals("list")) {
             Set<String> blocked = actxmiscdata.getBlockedCommands();
             if (blocked.isEmpty()) {
                 actxchatutils.sendWarning(sender, "commands.block.list.empty");
@@ -147,6 +158,8 @@ public class CommandBlock extends CommandBase {
             return null;
         }
 
+        actxmiscdata.ensureLoaded();
+
         if (args.length == 1) {
             List<String> completions = new ArrayList<>();
             String input = args[0].toLowerCase();
@@ -154,15 +167,34 @@ public class CommandBlock extends CommandBase {
             if ("list".startsWith(input)) {
                 completions.add("list");
             }
+            if ("toggle".startsWith(input)) {
+                completions.add("toggle");
+            }
 
             for (Object obj : MinecraftServer.getServer().getCommandManager().getCommands().keySet()) {
                 String cmdName = (String) obj;
+                if (cmdName.startsWith(input) && !cmdName.equals("block") && !completions.contains(cmdName)) {
+                    completions.add(markBlocked(cmdName));
+                }
+            }
+            return completions;
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("toggle")) {
+            List<String> completions = new ArrayList<>();
+            String input = args[1].toLowerCase();
+            for (Object obj : MinecraftServer.getServer().getCommandManager().getCommands().keySet()) {
+                String cmdName = (String) obj;
                 if (cmdName.startsWith(input) && !cmdName.equals("block")) {
-                    completions.add(cmdName);
+                    completions.add(markBlocked(cmdName));
                 }
             }
             return completions;
         }
         return null;
+    }
+
+    private static String markBlocked(String cmdName) {
+        return actxmiscdata.isCommandBlocked(cmdName) ? "\u00a7c" + cmdName : cmdName;
     }
 }

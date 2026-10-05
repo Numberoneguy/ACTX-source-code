@@ -497,6 +497,7 @@ public class GuiIngame extends Gui {
 			int k = j1 - j * this.getFontRenderer().FONT_HEIGHT;
 			int l = parScaledResolution.getScaledWidth() - b0 + 2;
 			drawRect(k1 - 2, k, l, k + this.getFontRenderer().FONT_HEIGHT, 1342177280);
+			this.getFontRenderer().drawString(s1, k1, k, 0xFFFFFFFF);
 
 			if (!hideNumbers && net.minecraft.command.server.CommandScoreboard.ScoreboardFlags.isVisible(score1.getPlayerName())) {
 				this.getFontRenderer().drawString(s2, l - this.getFontRenderer().getStringWidth(s2), k, 0xFFFFFFFF);

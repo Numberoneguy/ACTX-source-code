@@ -113,7 +113,7 @@ public class ChatTranslator {
             if (mc != null && mc.thePlayer != null) {
                 String formatCodes = prefixColor.toString() + (prefixBold ? EnumChatFormatting.BOLD.toString() : "");
                 int maxWidth = (mc.ingameGUI != null) ? mc.ingameGUI.getChatGUI().getChatWidth() : 320;
-                for (String line : wrapWithPrefix(formatCodes, prefixText, display, mc.fontRendererObj, maxWidth)) {
+                for (String line : wrapWithPrefix(formatCodes, stripFormatting(prefixText), display, mc.fontRendererObj, maxWidth)) {
                     mc.thePlayer.addChatMessage(new ChatComponentText(line));
                 }
             }

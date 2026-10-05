@@ -1,7 +1,9 @@
 package net.minecraft.client.gui;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,6 +60,7 @@ public class GuiChat extends GuiScreenVisualViewport {
 	private boolean waitingOnAutocomplete;
 	private int autocompleteIndex;
 	private List<String> foundPlayerNames = Lists.newArrayList();
+	private final Set<String> blockedCompletions = new HashSet<String>();
 	protected GuiTextField inputField;
 	/**+
 	 * is the text that appears when you press the chat key and the
@@ -245,10 +248,11 @@ public class GuiChat extends GuiScreenVisualViewport {
 
 			for (int i = 0; i < l; ++i) {
 				if (stringbuilder.length() > 0) {
-					stringbuilder.append(", ");
+					stringbuilder.append("\u00a7f, ");
 				}
 
-				stringbuilder.append(this.foundPlayerNames.get(i));
+				String name = this.foundPlayerNames.get(i);
+				stringbuilder.append(this.blockedCompletions.contains(name) ? "\u00a7c" : "\u00a7f").append(name);
 			}
 
 			this.mc.ingameGUI.getChatGUI()
@@ -316,6 +320,18 @@ public class GuiChat extends GuiScreenVisualViewport {
 		if (this.waitingOnAutocomplete) {
 			this.playerNamesFound = false;
 			this.foundPlayerNames.clear();
+			this.blockedCompletions.clear();
+
+			String[] cleaned = new String[parArrayOfString.length];
+			for (int i = 0; i < parArrayOfString.length; ++i) {
+				String raw = parArrayOfString[i];
+				if (raw.startsWith("\u00a7c")) {
+					raw = raw.substring(2);
+					this.blockedCompletions.add(raw);
+				}
+				cleaned[i] = raw;
+			}
+			parArrayOfString = cleaned;
 
 			for (int i = 0; i < parArrayOfString.length; ++i) {
 				String s = parArrayOfString[i];

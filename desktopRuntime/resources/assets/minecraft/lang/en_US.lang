@@ -1387,8 +1387,8 @@ tile.tripWire.name=Tripwire
 tile.tripWireSource.name=Tripwire Hook
 tile.commandBlock.name=Command Block
 # ActX Custom CommandBlocks
-tile.commandBlock.chain.name=Chain Command Block
-tile.commandBlock.repeating.name=Repeating Command Block
+tile.chainCommandBlock.name=Chain Command Block
+tile.repeatingCommandBlock.name=Repeating Command Block
 # END
 tile.beacon.name=Beacon
 tile.beacon.primary=Primary Power

@@ -1,5 +1,6 @@
 package net.lax1dude.eaglercraft.v1_8.sp.gui;
 
+import net.lax1dude.eaglercraft.v1_8.profile.GuiScreenAdvancedProfile;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
@@ -9,19 +10,37 @@ import java.util.List;
 
 public class GuiSavedLanNames extends GuiScreen {
 
-    private static final int BTN_CANCEL  = 0;
-    private static final int BTN_DONE    = 1;
-    private static final int BTN_DELETE  = 2;
+    private static final int cancel  = 0;
+    private static final int done    = 1;
+    private static final int delete  = 2;
 
     private static final int ENTRY_H = 24;
 
     private final GuiScreen parent;
+    private final boolean profileMode;
     private int selectedIndex = -1;
     private int scrollOffset  = 0;
     private int listTop, listBottom;
 
     public GuiSavedLanNames(GuiScreen parent) {
+        this(parent, false);
+    }
+
+    public GuiSavedLanNames(GuiScreen parent, boolean profileMode) {
         this.parent = parent;
+        this.profileMode = profileMode;
+    }
+
+    private List<String> savedNames() {
+        return profileMode ? actxmiscdata.getSavedProfileNames() : actxmiscdata.getSavedLanNames();
+    }
+
+    private void removeSaved(int index) {
+        if (profileMode) {
+            actxmiscdata.removeSavedProfileName(index);
+        } else {
+            actxmiscdata.removeSavedLanName(index);
+        }
     }
 
     @Override
@@ -36,9 +55,9 @@ public class GuiSavedLanNames extends GuiScreen {
         int totalW = btnW * 2 + gap;
         int startX = width / 2 - totalW / 2;
 
-        buttonList.add(new GuiButton(BTN_DELETE, 4, btnY, 70, 20, "\u00a7c" + I18n.format("gui.act.delete")));
-        buttonList.add(new GuiButton(BTN_CANCEL, startX,          btnY, btnW, 20, I18n.format("gui.cancel")));
-        buttonList.add(new GuiButton(BTN_DONE,   startX + btnW + gap, btnY, btnW, 20, I18n.format("gui.done")));
+        buttonList.add(new GuiButton(delete, 4, btnY, 70, 20, "\u00a7c" + I18n.format("gui.act.delete")));
+        buttonList.add(new GuiButton(cancel, startX,          btnY, btnW, 20, I18n.format("gui.cancel")));
+        buttonList.add(new GuiButton(done,   startX + btnW + gap, btnY, btnW, 20, I18n.format("gui.done")));
 
         updateButtonStates();
     }
@@ -47,29 +66,31 @@ public class GuiSavedLanNames extends GuiScreen {
     protected void actionPerformed(GuiButton btn) {
         switch (btn.id) {
 
-            case BTN_CANCEL:
+            case cancel:
                 mc.displayGuiScreen(parent);
                 break;
 
-            case BTN_DONE:
-                List<String> savedNamesForDone = actxmiscdata.getSavedLanNames();
+            case done:
+                List<String> savedNamesForDone = savedNames();
                 if (selectedIndex >= 0 && selectedIndex < savedNamesForDone.size()) {
                     String stored = savedNamesForDone.get(selectedIndex);
                     String editable = stored.replace("\u00a7", "&");
                     if (parent instanceof GuiMiscLan) {
                         ((GuiMiscLan) parent).nameField.setText(editable);
+                    } else if (parent instanceof GuiScreenAdvancedProfile) {
+                        ((GuiScreenAdvancedProfile) parent).loadSavedName(editable);
                     }
                     mc.displayGuiScreen(parent);
                 }
                 break;
 
-            case BTN_DELETE:
-                List<String> savedNamesForDelete = actxmiscdata.getSavedLanNames();
+            case delete:
+                List<String> savedNamesForDelete = savedNames();
                 if (selectedIndex >= 0 && selectedIndex < savedNamesForDelete.size()) {
-                    actxmiscdata.removeSavedLanName(selectedIndex);
+                    removeSaved(selectedIndex);
                     selectedIndex = -1;
                     
-                    int newSize = actxmiscdata.getSavedLanNames().size();
+                    int newSize = savedNames().size();
                     int visibleRows = Math.max(1, (listBottom - listTop) / ENTRY_H);
                     int maxScroll   = Math.max(0, newSize - visibleRows);
                     if (scrollOffset > maxScroll) scrollOffset = maxScroll;
@@ -84,11 +105,11 @@ public class GuiSavedLanNames extends GuiScreen {
         drawDefaultBackground();
 
         drawCenteredString(fontRendererObj,
-            "\u00a7f" + I18n.format("gui.act.misc.savedLanNames"), width / 2, 10, 0xFFFFFF);
+            "\u00a7f" + I18n.format(profileMode ? "gui.act.misc.savedProfileNames" : "gui.act.misc.savedLanNames"), width / 2, 10, 0xFFFFFF);
 
         drawRect(0, listTop - 2, width, listTop - 1, 0x55FFFFFF);
 
-        List<String> savedNames = actxmiscdata.getSavedLanNames();
+        List<String> savedNames = savedNames();
 
         if (savedNames.isEmpty()) {
             drawCenteredString(fontRendererObj,
@@ -144,7 +165,7 @@ public class GuiSavedLanNames extends GuiScreen {
 
         drawRect(0, listBottom, width, listBottom + 1, 0x55FFFFFF);
 
-        List<String> savedNames = actxmiscdata.getSavedLanNames();
+        List<String> savedNames = savedNames();
         String infoText;
         if (selectedIndex >= 0 && selectedIndex < savedNames.size()) {
             String stored   = savedNames.get(selectedIndex);
@@ -166,7 +187,7 @@ public class GuiSavedLanNames extends GuiScreen {
         super.mouseClicked(mx, my, button);
         if (my >= listTop && my < listBottom) {
             int row = scrollOffset + (my - listTop) / ENTRY_H;
-            if (row >= 0 && row < actxmiscdata.getSavedLanNames().size()) {
+            if (row >= 0 && row < savedNames().size()) {
                 selectedIndex = row;
                 updateButtonStates();
             }
@@ -179,7 +200,7 @@ public class GuiSavedLanNames extends GuiScreen {
         int wheel = net.lax1dude.eaglercraft.v1_8.Mouse.getDWheel();
         if (wheel != 0) {
             int visibleRows = Math.max(1, (listBottom - listTop) / ENTRY_H);
-            int maxScroll   = Math.max(0, actxmiscdata.getSavedLanNames().size() - visibleRows);
+            int maxScroll   = Math.max(0, savedNames().size() - visibleRows);
             if (wheel > 0 && scrollOffset > 0)             scrollOffset--;
             else if (wheel < 0 && scrollOffset < maxScroll) scrollOffset++;
         }
@@ -193,7 +214,7 @@ public class GuiSavedLanNames extends GuiScreen {
             if (selectedIndex < scrollOffset) scrollOffset = selectedIndex;
             updateButtonStates();
         }
-        if (k == 208 && selectedIndex < actxmiscdata.getSavedLanNames().size() - 1) {
+        if (k == 208 && selectedIndex < savedNames().size() - 1) {
             selectedIndex++;
             int visibleRows = Math.max(1, (listBottom - listTop) / ENTRY_H);
             if (selectedIndex >= scrollOffset + visibleRows)
@@ -202,7 +223,7 @@ public class GuiSavedLanNames extends GuiScreen {
         }
         if (k == 28 && selectedIndex >= 0) {
             for (GuiButton b : buttonList) {
-                if (b.id == BTN_DONE && b.enabled) {
+                if (b.id == done && b.enabled) {
                     try { actionPerformed(b); } catch (Exception ignored) {}
                     break;
                 }
@@ -213,9 +234,9 @@ public class GuiSavedLanNames extends GuiScreen {
 
     private void updateButtonStates() {
         boolean hasSel = selectedIndex >= 0
-                && selectedIndex < actxmiscdata.getSavedLanNames().size();
+                && selectedIndex < savedNames().size();
         for (GuiButton btn : buttonList) {
-            if (btn.id == BTN_DONE || btn.id == BTN_DELETE) btn.enabled = hasSel;
+            if (btn.id == done || btn.id == delete) btn.enabled = hasSel;
         }
     }
 

@@ -49,6 +49,7 @@ public final class actxmiscdata {
     private static final Set<String> loggedinusers = new HashSet<String>();
     private static final List<String> saveditems = new ArrayList<String>();
     private static final List<String> savedlannames = new ArrayList<String>();
+    private static final List<String> savedprofilenames = new ArrayList<String>();
     private static final Set<String> blockedcommands = new LinkedHashSet<String>();
     public static final class AnimationDef {
         public final int changeintervalms;
@@ -179,6 +180,14 @@ public final class actxmiscdata {
             saveditems.clear();
             saveditems.addAll(items);
         }
+        Map<String, Object> profile = asMap(root.get("profile"));
+        if (profile != null) {
+            List<String> pnames = asStringList(profile.get("names"));
+            if (pnames != null) {
+                savedprofilenames.clear();
+                savedprofilenames.addAll(pnames);
+            }
+        }
         Map<String, Object> lan = asMap(root.get("lan"));
         if (lan != null) {
             List<String> names = asStringList(lan.get("names"));
@@ -262,6 +271,8 @@ public final class actxmiscdata {
         }
         sb.append('\n');
         putList(sb, 0, "custom_items", saveditems);
+        sb.append("\nprofile:\n");
+        putList(sb, 1, "names", savedprofilenames);
         sb.append("\nlan:\n");
         putList(sb, 1, "names", savedlannames);
         sb.append("\nrestrictions:\n");
@@ -939,6 +950,22 @@ public final class actxmiscdata {
         if (legacyitems == null || legacyitems.isEmpty()) return;
         addSavedItemsIfAbsent(legacyitems);
     }
+    public static synchronized List<String> getSavedProfileNames() {
+        return new ArrayList<String>(savedprofilenames);
+    }
+    public static synchronized boolean addSavedProfileNameIfAbsent(String name) {
+        if (name == null || name.trim().isEmpty()) return false;
+        String trimmed = name.trim();
+        if (savedprofilenames.contains(trimmed)) return false;
+        savedprofilenames.add(trimmed);
+        saveSafe();
+        return true;
+    }
+    public static synchronized void removeSavedProfileName(int index) {
+        if (index < 0 || index >= savedprofilenames.size()) return;
+        savedprofilenames.remove(index);
+        saveSafe();
+    }
     public static synchronized List<String> getSavedLanNames() {
         return new ArrayList<String>(savedlannames);
     }
@@ -1055,6 +1082,7 @@ public final class actxmiscdata {
         passwords.clear();
         saveditems.clear();
         savedlannames.clear();
+        savedprofilenames.clear();
         blockedcommands.clear();
         animations.clear();
     }

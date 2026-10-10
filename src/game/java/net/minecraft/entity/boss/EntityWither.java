@@ -358,7 +358,8 @@ public class EntityWither extends EntityMob implements IBossDisplayData, IRanged
 
 	public static boolean func_181033_a(Block parBlock) {
 		return parBlock != Blocks.bedrock && parBlock != Blocks.end_portal && parBlock != Blocks.end_portal_frame
-				&& parBlock != Blocks.command_block && parBlock != Blocks.barrier;
+				&& parBlock != Blocks.command_block && parBlock != Blocks.chain_command_block
+				&& parBlock != Blocks.repeating_command_block && parBlock != Blocks.barrier;
 	}
 
 	public void func_82206_m() {

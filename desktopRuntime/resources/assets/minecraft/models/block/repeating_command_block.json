@@ -1,6 +1,12 @@
 {
-    "parent": "block/cube_all",
+    "parent": "block/cube",
     "textures": {
-        "all": "blocks/repeating_command_block"
+        "particle": "blocks/repeating_command_block_back",
+        "down": "blocks/repeating_command_block_side",
+        "up": "blocks/repeating_command_block_side",
+        "north": "blocks/repeating_command_block_front",
+        "east": "blocks/repeating_command_block_side",
+        "south": "blocks/repeating_command_block_back",
+        "west": "blocks/repeating_command_block_side"
     }
 }

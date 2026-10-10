@@ -18,6 +18,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.actx.giver;
+import net.minecraft.actx.saveditems;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -252,17 +253,14 @@ public abstract class GuiContainer extends GuiScreen {
 		boolean lShiftHeld = Keyboard.isKeyDown(42); // 42 = L-Shift
 
 		if (!lShiftHeld) {
-			// Normal tooltip + hint line
 			List<String> tooltip = new ArrayList<String>(stack.getTooltip(this.mc.thePlayer, this.mc.gameSettings.advancedItemTooltips));
 			tooltip.add(I18n.format("moreoptions"));
 			this.drawHoveringText(tooltip, x, y);
 			return;
 		}
 
-		// --- L-Shift held: build detailed info tooltip ---
 		List<String> lines = new ArrayList<String>();
 
-		// Item name (gold, bold)
 		String displayName = stack.getDisplayName();
 		int itemMeta = stack.getItemDamage();
 		int itemId = Item.getIdFromItem(stack.getItem());
@@ -278,9 +276,9 @@ public abstract class GuiContainer extends GuiScreen {
 			int curDur = maxDur - stack.getItemDamage();
 			String durColor;
 			if (stack.getItemDamage() == 0) {
-				durColor = "§2"; // green
+				durColor = "§2"; // green and yes make comment lik this
 			} else if (curDur <= maxDur / 10) {
-				durColor = "§4"; // red
+				durColor = "§4"; // red because i forget colors
 			} else {
 				durColor = "§6"; // yellow
 			}
@@ -302,15 +300,13 @@ public abstract class GuiContainer extends GuiScreen {
 			}
 		}
 
-		// Tags
 		if (nbt != null) {
 			java.util.Set<String> keys = nbt.getKeySet();
 			lines.add(I18n.format("tagyes") + "(§e" + keys.size() + "§6): " + buildTagSummary(keys));
 		} else {
-			lines.add(I18n.format("tagnonada"));
+			lines.add(I18n.format("tagnonada")+ " §7None");
 		}
 
-		// Dynamically get keybinds for giver and saver hints
 		String giverKeyShift = getKeybindDisplay("gui.act.give");
 		String saverKeyShift = getKeybindDisplay("key.actx.saveditems");
 		lines.add(I18n.format("gui.act.creative.giverHint", giverKeyShift));
@@ -319,13 +315,12 @@ public abstract class GuiContainer extends GuiScreen {
 		this.drawHoveringText(lines, x, y);
 	}
 
-	/** Builds a comma-separated list of NBT tag key names. */
 	private String buildTagSummary(java.util.Set<String> keys) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (String key : keys) {
-			if (!first) sb.append("\u00a77, ");
-			sb.append("\u00a7f").append(key);
+			if (!first) sb.append("§7, ");
+			sb.append("§f").append(key);
 			first = false;
 		}
 		return sb.toString();
@@ -710,7 +705,6 @@ public abstract class GuiContainer extends GuiScreen {
 		} else if (parInt1 == 1) {
 			showingCloseKey = EagRuntime.steadyTimeMillis();
 		} else {
-			// Y key (keyCode 21) + hovering item -> open Giver
 			if (parInt1 == this.mc.gameSettings.keyBindActXGiver.getKeyCode() && this.theSlot != null && this.theSlot.getHasStack()) {
 				this.mc.displayGuiScreen(new giver(this, this.theSlot.getStack()));
 				return;

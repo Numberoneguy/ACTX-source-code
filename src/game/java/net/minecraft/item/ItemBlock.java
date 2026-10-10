@@ -139,17 +139,6 @@ public class ItemBlock extends Item {
 	 * Returns the unlocalized name of this item.
 	 */
 	public String getUnlocalizedName(ItemStack var1) {
-		if (this.block == Blocks.command_block && var1 != null) {
-			switch (var1.getMetadata()) {
-				case 1:
-					return this.block.getUnlocalizedName() + ".chain";
-				case 2:
-					return this.block.getUnlocalizedName() + ".repeating";
-				case 0:
-				default:
-					return this.block.getUnlocalizedName();
-			}
-		}
 		return this.block.getUnlocalizedName();
 	}
 

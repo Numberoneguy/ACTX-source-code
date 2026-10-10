@@ -184,6 +184,10 @@ public class BlockModelShapes {
 				(new StateMap.Builder()).ignore(new IProperty[] { BlockJukebox.HAS_RECORD }).build());
 		this.registerBlockWithStateMapper(Blocks.command_block,
 				(new StateMap.Builder()).ignore(new IProperty[] { BlockCommandBlock.TRIGGERED }).build());
+		this.registerBlockWithStateMapper(Blocks.chain_command_block,
+				(new StateMap.Builder()).ignore(new IProperty[] { BlockCommandBlock.TRIGGERED }).build());
+		this.registerBlockWithStateMapper(Blocks.repeating_command_block,
+				(new StateMap.Builder()).ignore(new IProperty[] { BlockCommandBlock.TRIGGERED }).build());
 		this.registerBlockWithStateMapper(Blocks.cobblestone_wall,
 				(new StateMap.Builder()).withName(BlockWall.VARIANT).withSuffix("_wall").build());
 		this.registerBlockWithStateMapper(Blocks.double_plant,

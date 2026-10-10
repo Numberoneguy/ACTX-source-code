@@ -341,8 +341,6 @@ public class ModelBakery {
 		this.variantNames.put(Item.getItemFromBlock(Blocks.stone_slab),
 				Lists.newArrayList(new String[] { "stone_slab", "sandstone_slab", "cobblestone_slab", "brick_slab",
 						"stone_brick_slab", "nether_brick_slab", "quartz_slab" }));
-		this.variantNames.put(Item.getItemFromBlock(Blocks.command_block),
-                Lists.newArrayList(new String[] { "command_block", "chain_command_block", "repeating_command_block" }));
 		this.variantNames.put(Item.getItemFromBlock(Blocks.stone_slab2),
 				Lists.newArrayList(new String[] { "red_sandstone_slab" }));
 		this.variantNames.put(Item.getItemFromBlock(Blocks.stained_glass),

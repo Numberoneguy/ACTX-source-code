@@ -86,12 +86,14 @@ public final class actxcreativeitems {
                 items.add(new ItemStack(customblockitem, 1, 0));
             }
         }
-        Block commandblock = Block.getBlockById(137);
-        if (commandblock != null) {
-            Item commandblockitem = Item.getItemFromBlock(commandblock);
-            if (commandblockitem != null) {
-                items.add(new ItemStack(commandblockitem, 1, 1));
-                items.add(new ItemStack(commandblockitem, 1, 2));
+        int[] commandblockids = { 211, 210 };
+        for (int id : commandblockids) {
+            Block commandblock = Block.getBlockById(id);
+            if (commandblock != null) {
+                Item commandblockitem = Item.getItemFromBlock(commandblock);
+                if (commandblockitem != null) {
+                    items.add(new ItemStack(commandblockitem, 1, 0));
+                }
             }
         }
         return items;

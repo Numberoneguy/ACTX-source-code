@@ -78,7 +78,7 @@ public final class actxcommand {
         String[] args = remainder.isEmpty() ? new String[0] : remainder.split("\\s+");
         String sub = args.length > 0 ? args[0].toLowerCase() : "";
         if (sub.isEmpty() || sub.equals("help")) {
-            sendHelp(player);
+            sendHelp(player, args.length > 1 ? args[1] : "1");
             return true;
         }
         switch (sub) {
@@ -106,9 +106,32 @@ public final class actxcommand {
                 return true;
         }
     }
-    private static void sendHelp(EntityPlayerSP player) {
-        player.addChatMessage(createStyledMessage("cmd.act.help", EnumChatFormatting.GOLD, "ActX"));
-        for (Entry e : entries) printEntry(player, e);
+    private static final String helpversion = "v2.1";
+    private static final int helppagesize = 8;
+    private static final Entry[] sortedentries = buildSorted();
+    private static Entry[] buildSorted() {
+        Entry[] copy = new Entry[entries.length];
+        System.arraycopy(entries, 0, copy, 0, entries.length);
+        java.util.Arrays.sort(copy, (a, b) -> a.usage.compareToIgnoreCase(b.usage));
+        return copy;
+    }
+    private static void sendHelp(EntityPlayerSP player, String pagearg) {
+        int pages = Math.max(1, (sortedentries.length + helppagesize - 1) / helppagesize);
+        int page;
+        try {
+            page = Integer.parseInt(pagearg);
+        } catch (NumberFormatException ex) {
+            sendNaN(player, pagearg);
+            return;
+        }
+        page = Math.max(1, Math.min(pages, page));
+        ChatComponentText header = new ChatComponentText(
+                "-- Help for ACT-Mod " + helpversion + " (" + page + " / " + pages + ") --");
+        header.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED));
+        player.addChatMessage(header);
+        int start = (page - 1) * helppagesize;
+        int end = Math.min(sortedentries.length, start + helppagesize);
+        for (int i = start; i < end; i++) printEntry(player, sortedentries[i]);
     }
     private static void sendSubHelp(EntityPlayerSP player, String prefix) {
         boolean any = false;
@@ -130,10 +153,11 @@ public final class actxcommand {
         style.setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ChatComponentText(I18n.format(e.runnable ? "cmd.act.help.do" : "cmd.act.help.click"))));
         line.setChatStyle(style);
-        ChatComponentText desc = new ChatComponentText(" - " + I18n.format(e.desckey));
-        ChatStyle descstyle = new ChatStyle();
-        descstyle.setColor(EnumChatFormatting.GRAY);
-        desc.setChatStyle(descstyle);
+        ChatComponentText sep = new ChatComponentText(" : ");
+        sep.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
+        line.appendSibling(sep);
+        ChatComponentText desc = new ChatComponentText(EnumChatFormatting.getTextWithoutFormattingCodes(I18n.format(e.desckey)));
+        desc.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.WHITE));
         line.appendSibling(desc);
         player.addChatMessage(line);
     }

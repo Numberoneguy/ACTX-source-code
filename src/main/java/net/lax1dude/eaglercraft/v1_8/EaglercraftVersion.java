@@ -10,7 +10,7 @@ public class EaglercraftVersion {
 	/// Customize these to fit your fork:
 	
 	public static final String projectForkName = "ActX";
-	public static final String projectForkVersion = "v1.7.0";
+	public static final String projectForkVersion = "v1.7.2";
 	public static final String projectForkVendor = "Numberoneguy";
 	
 	public static final String projectForkURL = "https://gitlab.com/Numberoneguy/yesRepo/tree/main/Release";

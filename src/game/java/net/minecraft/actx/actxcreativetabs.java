@@ -14,7 +14,7 @@ public final class actxcreativetabs {
         return new ItemStack(Blocks.command_block, 1, 0);
     }
     public static ItemStack getCustomBlocksTabIcon() {
-        ItemStack stack = new ItemStack(Blocks.command_block, 1, 2);
+        ItemStack stack = new ItemStack(Blocks.repeating_command_block);
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag("ench", new NBTTagList());
         stack.setTagCompound(tag);

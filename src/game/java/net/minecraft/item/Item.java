@@ -671,6 +671,8 @@ public class Item {
 		registerItemBlock(Blocks.birch_stairs);
 		registerItemBlock(Blocks.jungle_stairs);
 		registerItemBlock(Blocks.command_block);
+		registerItemBlock(Blocks.chain_command_block);
+		registerItemBlock(Blocks.repeating_command_block);
 		registerItemBlock(Blocks.beacon);
 		registerItemBlock(Blocks.cobblestone_wall, (new ItemMultiTexture(Blocks.cobblestone_wall,
 				Blocks.cobblestone_wall, new Function<ItemStack, String>() {

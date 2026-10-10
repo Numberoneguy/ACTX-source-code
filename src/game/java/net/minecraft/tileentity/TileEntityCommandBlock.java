@@ -1,6 +1,7 @@
 package net.minecraft.tileentity;
 
 import net.lax1dude.eaglercraft.v1_8.netty.ByteBuf;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockCommandBlock;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandResultStats;
@@ -19,7 +20,6 @@ import net.minecraft.world.World;
 public class TileEntityCommandBlock extends TileEntity implements ITickable {
 
 	private boolean auto = false;
-	private int CBMode = 0; // 0 = Impulse, 1 = Chain, 2 = Repeating
 	private boolean powered = false;
 	private boolean conditionMet = true;
 	private boolean triggered = false;
@@ -77,7 +77,7 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 		boolean isActivated = this.auto || this.powered;
 
 		// Repeating Command Block Mode (Mode 2)
-		if (this.CBMode == 2) {
+		if (this.getCBMode() == 2) {
 			if (isActivated && this.conditionMet) {
 				this.executeAndPropagate(world);
 			}
@@ -88,7 +88,7 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 		boolean isActivated = this.auto || this.powered;
 
 		// Impulse Command Block Mode (Mode 0)
-		if (this.CBMode == 0 && isActivated && this.conditionMet) {
+		if (this.getCBMode() == 0 && isActivated && this.conditionMet) {
 			this.executeAndPropagate(world);
 		}
 	}
@@ -97,7 +97,7 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 		boolean isActivated = this.auto || this.powered;
 
 		// Chain Command Block Mode (Mode 1)
-		if (this.CBMode == 1 && isActivated && this.conditionMet) {
+		if (this.getCBMode() == 1 && isActivated && this.conditionMet) {
 			this.executeAndPropagate(world);
 		}
 	}
@@ -166,7 +166,7 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 		this.commandBlockLogic.writeDataToNBT(nbttagcompound);
 
 		nbttagcompound.setBoolean("auto", this.auto);
-		nbttagcompound.setInteger("CBMode", this.CBMode);
+		nbttagcompound.setInteger("CBMode", this.getCBMode());
 		nbttagcompound.setBoolean("powered", this.powered);
 		nbttagcompound.setBoolean("conditionMet", this.conditionMet);
 		nbttagcompound.setBoolean("triggered", this.triggered);
@@ -178,9 +178,6 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 
 		if (nbttagcompound.hasKey("auto")) {
 			this.auto = nbttagcompound.getBoolean("auto");
-		}
-		if (nbttagcompound.hasKey("CBMode")) {
-			this.CBMode = nbttagcompound.getInteger("CBMode");
 		}
 		if (nbttagcompound.hasKey("powered")) {
 			this.powered = nbttagcompound.getBoolean("powered");
@@ -220,19 +217,43 @@ public class TileEntityCommandBlock extends TileEntity implements ITickable {
 		return this.auto;
 	}
 
-	public void setCBMode(int mode) {
-		this.CBMode = mode;
-		this.markDirty();
-		World world = this.getWorld();
-		if (world != null) {
-			IBlockState state = world.getBlockState(this.pos);
-			world.setBlockState(this.pos, state.withProperty(BlockCommandBlock.MODE, mode), 3);
-			world.markBlockForUpdate(this.pos);
+	/**
+	 * Mode is decided by which block this is (impulse / chain / repeating).
+	 * 0 = Impulse, 1 = Chain, 2 = Repeating
+	 */
+	public int getCBMode() {
+		if (this.getWorld() == null) {
+			return 0;
 		}
+		Block block = this.getBlockType();
+		return block instanceof BlockCommandBlock ? ((BlockCommandBlock) block).getMode() : 0;
 	}
 
-	public int getCBMode() {
-		return this.CBMode;
+	/**
+	 * Swaps this command block for the block of the requested mode, keeping
+	 * facing and all tile entity data.
+	 */
+	public void setCBMode(int mode) {
+		World world = this.getWorld();
+		if (world == null || mode == this.getCBMode()) {
+			return;
+		}
+		IBlockState old = world.getBlockState(this.pos);
+		if (!(old.getBlock() instanceof BlockCommandBlock)) {
+			return;
+		}
+		NBTTagCompound saved = new NBTTagCompound();
+		this.writeToNBT(saved);
+		IBlockState next = BlockCommandBlock.getBlockForMode(mode).getDefaultState()
+				.withProperty(BlockCommandBlock.FACING, old.getValue(BlockCommandBlock.FACING))
+				.withProperty(BlockCommandBlock.TRIGGERED, old.getValue(BlockCommandBlock.TRIGGERED));
+		world.setBlockState(this.pos, next, 3);
+		TileEntity te = world.getTileEntity(this.pos);
+		if (te instanceof TileEntityCommandBlock) {
+			te.readFromNBT(saved);
+			te.markDirty();
+		}
+		world.markBlockForUpdate(this.pos);
 	}
 
 	public void setPowered(boolean powered) {

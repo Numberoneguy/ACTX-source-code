@@ -210,6 +210,8 @@ public class Blocks {
 	public static Block birch_stairs;
 	public static Block jungle_stairs;
 	public static Block command_block;
+	public static Block chain_command_block;
+	public static Block repeating_command_block;
 	public static BlockBeacon beacon;
 	public static Block cobblestone_wall;
 	public static Block flower_pot;
@@ -422,6 +424,8 @@ public class Blocks {
 			birch_stairs = getRegisteredBlock("birch_stairs");
 			jungle_stairs = getRegisteredBlock("jungle_stairs");
 			command_block = getRegisteredBlock("command_block");
+			chain_command_block = getRegisteredBlock("chain_command_block");
+			repeating_command_block = getRegisteredBlock("repeating_command_block");
 			beacon = (BlockBeacon) getRegisteredBlock("beacon");
 			cobblestone_wall = getRegisteredBlock("cobblestone_wall");
 			flower_pot = getRegisteredBlock("flower_pot");

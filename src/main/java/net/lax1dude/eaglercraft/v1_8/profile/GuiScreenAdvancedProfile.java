@@ -2,6 +2,8 @@ package net.lax1dude.eaglercraft.v1_8.profile;
 
 import net.lax1dude.eaglercraft.v1_8.Keyboard;
 import net.lax1dude.eaglercraft.v1_8.minecraft.EnumInputEvent;
+import net.lax1dude.eaglercraft.v1_8.sp.gui.GuiSavedLanNames;
+import net.minecraft.actx.data_o_algo.actxmiscdata;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -23,25 +25,25 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
     private int symbolPage = 0;
     private static final int SYMBOLS_PER_PAGE = 48;
     
-    private static final char[] COLOR_CHARS = {
+    private static final char[] color_num = {
         '0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'
     };
     
-    private static final String[] COLOR_KEYS = {
+    private static final String[] color_keys = {
         "black", "darkBlue", "darkGreen", "darkAqua",
         "darkRed", "darkPurple", "gold", "gray",
         "darkGray", "blue", "green", "aqua",
         "red", "lightPurple", "yellow", "white"
     };
 
-    private static final char[]   FORMAT_CHARS  = {'l','o','n','m','k','r'};
+    private static final char[]   format_keys  = {'l','o','n','m','k','r'};
     
-    private static final String[] FORMAT_KEYS = {
+    private static final String[] format_keyname = {
         "bold", "italic", "underline", "strikethrough", "obfuscated", "reset"
     };
     
-    private static final String[] FORMAT_INSERT = {"&l","&o","&n","&m","&k","&r"};
-    private static final String[][] ALL_SYMBOLS = {
+    private static final String[] format_ins = {"&l","&o","&n","&m","&k","&r"};
+    private static final String[][] all_symbols = {
         {"2605","star filled black"},{"2606","star outline white"},
         {"2736","star six pointed"},{"2734","star eight pointed"},
         {"2726","star four pointed black diamond"},{"272A","star circled"},
@@ -164,14 +166,14 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         {"200B","zero width space invisible"},
     };
 
-    private String[][] filteredSymbols = ALL_SYMBOLS;
+    private String[][] filteredSymbols = all_symbols;
     private String     lastSearchQuery  = "";
 
-    private static final int BTN_TAB_COLORS  = 40;
-    private static final int BTN_TAB_FORMAT  = 41;
-    private static final int BTN_TAB_SYMBOLS = 42;
-    private static final int BTN_SYM_PREV    = 43;
-    private static final int BTN_SYM_NEXT    = 44;
+    private static final int tab_colors  = 40;
+    private static final int tab_format  = 41;
+    private static final int tab_symbols = 42;
+    private static final int symbols_previous    = 43;
+    private static final int symbols_next    = 44;
 
     private int leftCenterX, fieldX, fieldY, tabY, contentY;
     private int symStartX, gridTop, symNavY;
@@ -183,6 +185,7 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
     @Override
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
+        actxmiscdata.ensureLoaded();
         buttonList.clear();
 
         leftCenterX = width / 4;
@@ -204,15 +207,19 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         int tabW = 64, tabGap = 6;
         int totalTabW = 3 * tabW + 2 * tabGap;
         int tabStartX = leftCenterX - totalTabW / 2;
-        buttonList.add(new GuiButton(BTN_TAB_COLORS,  tabStartX,                   tabY, tabW, 18, I18n.format("advancedProfile.tab.colors")));
-        buttonList.add(new GuiButton(BTN_TAB_FORMAT,  tabStartX + tabW + tabGap,   tabY, tabW, 18, I18n.format("advancedProfile.tab.format")));
-        buttonList.add(new GuiButton(BTN_TAB_SYMBOLS, tabStartX + 2*(tabW+tabGap), tabY, tabW, 18, I18n.format("advancedProfile.tab.symbols")));
+        buttonList.add(new GuiButton(tab_colors,  tabStartX,                   tabY, tabW, 18, I18n.format("advancedProfile.tab.colors")));
+        buttonList.add(new GuiButton(tab_format,  tabStartX + tabW + tabGap,   tabY, tabW, 18, I18n.format("advancedProfile.tab.format")));
+        buttonList.add(new GuiButton(tab_symbols, tabStartX + 2*(tabW+tabGap), tabY, tabW, 18, I18n.format("advancedProfile.tab.symbols")));
 
         contentY = tabY + 26;
 
         buildTabContent();
         buttonList.add(new GuiButton(2, width / 2 - 102, height - 44, 100, 20, I18n.format("advancedProfile.applySave")));
         buttonList.add(new GuiButton(0, width / 2 + 2,   height - 44, 100, 20, I18n.format("gui.done")));
+        buttonList.add(new GuiButton(3, width / 2 - 102, height - 22, 100, 20, I18n.format("gui.act.misc.saveName")));
+        GuiButton savedBtn = new GuiButton(4, width / 2 + 2, height - 22, 100, 20, I18n.format("gui.act.misc.savedProfileNames"));
+        savedBtn.enabled = !actxmiscdata.getSavedProfileNames().isEmpty();
+        buttonList.add(savedBtn);
 
         updatePreview();
     }
@@ -222,7 +229,7 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         while (it.hasNext()) {
             int id = it.next().id;
             if ((id >= 10 && id < 36) || (id >= 50 && id < 98)
-                    || id == BTN_SYM_PREV || id == BTN_SYM_NEXT) {
+                    || id == symbols_previous || id == symbols_next) {
                 it.remove();
             }
         }
@@ -236,15 +243,15 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
                 int col = i % 4, row = i / 4;
                 int bx = startX + col * (btnW + colGap);
                 int by = startY + row * (btnH + rowGap);
-                buttonList.add(new GuiButton(10 + i, bx, by, btnW, btnH, I18n.format("gui.act.color." + COLOR_KEYS[i])));
+                buttonList.add(new GuiButton(10 + i, bx, by, btnW, btnH, I18n.format("gui.act.color." + color_keys[i])));
             }
 
         } else if (activeTab == 1) {
             int btnW = 180, btnH = 18;
             int btnX = leftCenterX - btnW / 2;
             int startY = contentY + 8;
-            for (int i = 0; i < FORMAT_KEYS.length; i++) {
-                buttonList.add(new GuiButton(30 + i, btnX, startY + i * (btnH + 6), btnW, btnH, I18n.format("advancedProfile.format." + FORMAT_KEYS[i])));
+            for (int i = 0; i < format_keyname.length; i++) {
+                buttonList.add(new GuiButton(30 + i, btnX, startY + i * (btnH + 6), btnW, btnH, I18n.format("gui.act.format." + format_keyname[i])));
             }
 
         } else {
@@ -274,8 +281,8 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
             }
 
             symNavY = gridTop + 6 * (symBtnH + symRowGap) + 6;
-            buttonList.add(new GuiButton(BTN_SYM_PREV, leftCenterX - 58, symNavY, 54, 16, I18n.format("advancedProfile.prev")));
-            buttonList.add(new GuiButton(BTN_SYM_NEXT, leftCenterX +  4, symNavY, 54, 16, I18n.format("advancedProfile.next")));
+            buttonList.add(new GuiButton(symbols_previous, leftCenterX - 58, symNavY, 54, 16, "<--"));
+            buttonList.add(new GuiButton(symbols_next, leftCenterX +  4, symNavY, 54, 16, "-->"));
         }
     }
 
@@ -292,10 +299,10 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         if (query.equals(lastSearchQuery)) return;
         lastSearchQuery = query;
         if (query.isEmpty()) {
-            filteredSymbols = ALL_SYMBOLS;
+            filteredSymbols = all_symbols;
         } else {
             java.util.List<String[]> result = new java.util.ArrayList<String[]>();
-            for (String[] sym : ALL_SYMBOLS) {
+            for (String[] sym : all_symbols) {
                 if (sym[0].toLowerCase().contains(query) || sym[1].toLowerCase().contains(query)) {
                     result.add(sym);
                 }
@@ -374,7 +381,7 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         drawCenteredString(fontRendererObj, I18n.format("advancedProfile.raw", rawDisp), rightCenterX, previewY + 34, 0x777777);
 
         symbolTooltip = "";
-        if (activeTab == 2) computeSymbolTooltip(mx, my);
+        if (activeTab == 2) cstt(mx, my);
         if (!symbolTooltip.isEmpty()) {
             int tipW = fontRendererObj.getStringWidth(symbolTooltip) + 8;
             int tipX = Math.min(tooltipX + 10, width - tipW - 2);
@@ -385,7 +392,7 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         }
     }
 
-    private void computeSymbolTooltip(int mx, int my) {
+    private void cstt(int mx, int my) {
         symbolTooltip = "";
         int symBtnW = 24, symBtnH = 18, symColGap = 2, symRowGap = 4, symCols = 8;
         int start = symbolPage * SYMBOLS_PER_PAGE;
@@ -437,21 +444,25 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
             advancedNameField.setText(""); updatePreview();
         } else if (btn.id == 2) {
             applyName(); mc.displayGuiScreen(parent);
+        } else if (btn.id == 3) {
+            saveCurrentName();
+        } else if (btn.id == 4) {
+            mc.displayGuiScreen(new GuiSavedLanNames(this, true));
 
-        } else if (btn.id == BTN_TAB_COLORS)  { activeTab = 0; symbolPage = 0; initGui();
-        } else if (btn.id == BTN_TAB_FORMAT)   { activeTab = 1; symbolPage = 0; initGui();
-        } else if (btn.id == BTN_TAB_SYMBOLS)  { activeTab = 2; symbolPage = 0; initGui();
+        } else if (btn.id == tab_colors)  { activeTab = 0; symbolPage = 0; initGui();
+        } else if (btn.id == tab_format)   { activeTab = 1; symbolPage = 0; initGui();
+        } else if (btn.id == tab_symbols)  { activeTab = 2; symbolPage = 0; initGui();
 
-        } else if (btn.id == BTN_SYM_PREV) {
+        } else if (btn.id == symbols_previous) {
             if (symbolPage > 0) { symbolPage--; buildTabContent(); }
-        } else if (btn.id == BTN_SYM_NEXT) {
+        } else if (btn.id == symbols_next) {
             int total = (filteredSymbols.length + SYMBOLS_PER_PAGE - 1) / SYMBOLS_PER_PAGE;
             if (symbolPage < total - 1) { symbolPage++; buildTabContent(); }
 
         } else if (btn.id >= 10 && btn.id < 26) {
-            insertAtCursor("&" + COLOR_CHARS[btn.id - 10]);
+            insertAtCursor("&" + color_num[btn.id - 10]);
         } else if (btn.id >= 30 && btn.id < 36) {
-            insertAtCursor(FORMAT_INSERT[btn.id - 30]);
+            insertAtCursor(format_ins[btn.id - 30]);
         } else if (btn.id >= 50 && btn.id < 98) {
             int symIdx = symbolPage * SYMBOLS_PER_PAGE + (btn.id - 50);
             if (symIdx < filteredSymbols.length) {
@@ -465,6 +476,21 @@ public class GuiScreenAdvancedProfile extends GuiScreen {
         int pos    = advancedNameField.getCursorPosition();
         advancedNameField.setText(cur.substring(0, pos) + toInsert + cur.substring(pos));
         advancedNameField.setCursorPosition(pos + toInsert.length());
+        updatePreview();
+    }
+
+    private void saveCurrentName() {
+        String name = advancedNameField.getText().trim();
+        if (name.isEmpty()) return;
+        actxmiscdata.ensureLoaded();
+        actxmiscdata.addSavedProfileNameIfAbsent(name);
+        for (GuiButton b : buttonList) {
+            if (b.id == 4) { b.enabled = true; break; }
+        }
+    }
+
+    public void loadSavedName(String text) {
+        advancedNameField.setText(text);
         updatePreview();
     }
 

@@ -346,10 +346,13 @@ public abstract class Render<T extends Entity> {
 		return this.renderManager.getFontRenderer();
 	}
 
-	/**+
+/**+
 	 * Renders an entity's name above its head
 	 */
 	public void renderLivingLabel(T entityIn, String str, double x, double y, double z, int maxDistance) {
+		if (str != null && str.length() > 256) {
+			str = str.substring(0, 256);
+		}
 		double d0 = entityIn.getDistanceSqToEntity(this.renderManager.livingPlayer);
 		if (d0 <= (double) (maxDistance * maxDistance)) {
 			if (DeferredStateManager.isInDeferredPass()) {

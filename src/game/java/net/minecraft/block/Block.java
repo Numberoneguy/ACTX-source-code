@@ -1410,7 +1410,7 @@ public class Block {
 				(new BlockStairs(
 						block1.getDefaultState().withProperty(BlockPlanks.VARIANT, BlockPlanks.EnumType.JUNGLE)))
 								.setUnlocalizedName("stairsWoodJungle"));
-		registerBlock(137, (String) "command_block", (new BlockCommandBlock()).setBlockUnbreakable()
+		registerBlock(137, (String) "command_block", (new BlockCommandBlock(0)).setBlockUnbreakable()
 				.setResistance(6000000.0F).setUnlocalizedName("commandBlock"));
 		registerBlock(138, (String) "beacon", (new BlockBeacon()).setUnlocalizedName("beacon").setLightLevel(1.0F));
 		registerBlock(139, (String) "cobblestone_wall", (new BlockWall(block)).setUnlocalizedName("cobbleWall"));
@@ -1548,6 +1548,10 @@ public class Block {
 				.setStepSound(soundTypeWood).setUnlocalizedName("doorDarkOak").disableStats());
 		registerBlock(198, (String) "what_the_fuck", (new BlockFuny()).setHardness(1.5F).setResistance(10.0F)
 				.setStepSound(soundTypePiston).setUnlocalizedName("what_the_fuck"));
+		registerBlock(210, (String) "repeating_command_block", (new BlockCommandBlock(2)).setBlockUnbreakable()
+				.setResistance(6000000.0F).setUnlocalizedName("repeatingCommandBlock"));
+		registerBlock(211, (String) "chain_command_block", (new BlockCommandBlock(1)).setBlockUnbreakable()
+				.setResistance(6000000.0F).setUnlocalizedName("chainCommandBlock"));
 		blockRegistry.validateKey();
 
 		for (Block block13 : blockRegistry) {

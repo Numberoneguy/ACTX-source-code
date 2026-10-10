@@ -236,7 +236,11 @@ public class EaglerFontRenderer extends FontRenderer {
 	}
 
 	private boolean decodeASCIICodepointsAndValidate(String str) {
-		for(int i = 0, l = str.length(); i < l; ++i) {
+		int l = str.length();
+		if (l > temporaryCodepointArray.length) {
+			l = temporaryCodepointArray.length;
+		}
+		for(int i = 0; i < l; ++i) {
 			int j = FontMappingHelper.lookupChar(str.charAt(i), true);
 			if(j != -1) {
 				temporaryCodepointArray[i] = j;

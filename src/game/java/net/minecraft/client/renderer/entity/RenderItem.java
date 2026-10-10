@@ -1024,10 +1024,6 @@ public class RenderItem implements IResourceManagerReloadListener {
 		this.registerItem(Items.ghast_tear, "ghast_tear");
 		this.registerItem(Items.gold_nugget, "gold_nugget");
 		this.registerItem(Items.nether_wart, "nether_wart");
-		Item item = Item.getItemFromBlock(Blocks.command_block);
-		this.itemModelMesher.register(item, 0, new ModelResourceLocation("command_block", "inventory"));
-        this.itemModelMesher.register(item, 1, new ModelResourceLocation("chain_command_block", "inventory"));
-        this.itemModelMesher.register(item, 2, new ModelResourceLocation("repeating_command_block", "inventory"));
 		this.itemModelMesher.register(Items.potionitem, new ItemMeshDefinition() {
 			public ModelResourceLocation getModelLocation(ItemStack itemstack) {
 				return ItemPotion.isSplash(itemstack.getMetadata())
@@ -1111,6 +1107,8 @@ public class RenderItem implements IResourceManagerReloadListener {
 			}
 		});
 		this.registerBlock(Blocks.command_block, "command_block");
+		this.registerBlock(Blocks.chain_command_block, "chain_command_block");
+		this.registerBlock(Blocks.repeating_command_block, "repeating_command_block");
 		this.registerItem(Items.fireworks, "fireworks");
 		this.registerItem(Items.command_block_minecart, "command_block_minecart");
 		this.registerBlock(Blocks.barrier, "barrier");

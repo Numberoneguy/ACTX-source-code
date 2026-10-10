@@ -445,7 +445,6 @@ public class GuiScreenEditProfile extends GuiScreen {
 		usernameField.mouseClicked(mx, my, button);
 		if (button == 0) {
 			if(!EagRuntime.getConfiguration().isDemo()) {
-				// Export Profile Click (Top Right)
 				String exportText = I18n.format("editProfile.exportProfile");
 				int wExp = mc.fontRendererObj.getStringWidth(exportText);
 				if(mx > (width - (wExp * 3 / 4) - 7) && mx < width - 1 && my > 1 && my < 12) {
@@ -456,7 +455,6 @@ public class GuiScreenEditProfile extends GuiScreen {
 					return;
 				}
 				
-				// Advanced Profile Click (Top Left)
 				String advText = I18n.format("editProfile.advancedProfile");
 				int wAdv = mc.fontRendererObj.getStringWidth(advText);
 				if(mx > 1 && mx < (wAdv * 3 / 4) + 7 && my > 1 && my < 12) {

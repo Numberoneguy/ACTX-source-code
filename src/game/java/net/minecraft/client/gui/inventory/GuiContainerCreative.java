@@ -165,7 +165,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         }
     } else if (k != 5 && slotInv == field_147060_v) {
         InventoryPlayer inventoryplayer = this.mc.thePlayer.inventory;
-        // ... rest of method
             ItemStack itemstack1 = inventoryplayer.getItemStack();
             ItemStack itemstack2 = slot.getStack();
             if (k == 2) {
@@ -433,17 +432,16 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
     protected void drawGuiContainerForegroundLayer(int var1, int var2) {
         GlStateManager.disableBlend();
         if (this.isSearchActive()) {
-            // When search is active (even on page 2), show "Search" not "Advanced Creative Tab"
             this.fontRendererObj.drawString(I18n.format(CreativeTabs.tabAllSearch.getTranslatedTabLabel(), new Object[0]), 8, 6, 4210752);
         } else if (this.showingUnobtainable && this.page2View == PAGE2_VIEW_SAVED) {
             this.fontRendererObj.drawString(
-                    "\u00a7r" + I18n.format("key.actx.saveditems", new Object[0]) + "\u00a7r", 8, 6, 4210752);
+                    "§r" + I18n.format("key.actx.saveditems", new Object[0]) + "§r", 8, 6, 4210752);
         } else if (this.showingUnobtainable && this.page2View == PAGE2_VIEW_CUSTOM_BLOCKS) {
             this.fontRendererObj.drawString(
-                    "\u00a7r" + I18n.format(actxcreativetabs.custom_blocks_title_key, new Object[0]) + "\u00a7r", 8, 6, 4210752);
+                    "§r" + I18n.format(actxcreativetabs.custom_blocks_title_key, new Object[0]) + "§r", 8, 6, 4210752);
         } else if (this.showingUnobtainable) {
             this.fontRendererObj.drawString(
-                    "\u00a7r" + I18n.format("itemGroup.act", new Object[0]) + "\u00a7r", 8, 6, 4210752);
+                    "§r" + I18n.format("itemGroup.act", new Object[0]) + "§r", 8, 6, 4210752);
         } else {
             CreativeTabs creativetabs = CreativeTabs.creativeTabArray[selectedTabIndex];
             if (creativetabs.drawInForegroundOfTab()) {
@@ -467,12 +465,8 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
 
             for (int k = 0; k < CreativeTabs.creativeTabArray.length; ++k) {
                 CreativeTabs tab = CreativeTabs.creativeTabArray[k];
-                // Skip the tab-0 top-row slot on page 1 in mouseClicked --
-                // this prevents the "Building Blocks" tab from being consumed
-                // here and then re-consumed in mouseReleased.
-                // mouseReleased is the single handler for ALL tab clicks.
                 if (this.func_147049_a(tab, i, j)) {
-                    return; // consume the click so the slot/item logic below is skipped
+                    return;
                 }
             }
         }
@@ -496,19 +490,10 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
             int relX = i - this.guiLeft;
             int relY = j - this.guiTop;
 
-            // NOTE: Page switching is handled exclusively by the buttonLeft/
-            // buttonRight arrow buttons (actionPerformed ids 101/102) and the
-            // '<'/'>' keyTyped shortcuts. There is deliberately no click-to-
-            // toggle-page hit-area here anymore -- tab column 0, top row is
-            // the real "Building Blocks" tab (creativeTabArray[0]) and must
-            // be selectable like any other tab, not hijacked as a page arrow.
-
-            // --- Normal tab clicks on page 1 ---
             if (!this.showingUnobtainable) {
                 for (int m = 0; m < CreativeTabs.creativeTabArray.length; ++m) {
                     CreativeTabs creativetabs = CreativeTabs.creativeTabArray[m];
                     if (this.func_147049_a(creativetabs, relX, relY)) {
-                        // Switching to a normal tab always puts us back on page 1
                         this.showingUnobtainable = false;
                         this.currentCategory = 1;
                         if (this.buttonLeft  != null) this.buttonLeft.enabled  = false;
@@ -519,25 +504,20 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 }
             }
 
-            // --- Tabs clickable on page 2 (search + save) ---
             if (this.showingUnobtainable) {
-                // Search tab
                 CreativeTabs searchTab = CreativeTabs.tabAllSearch;
                 if (this.func_147049_a(searchTab, relX, relY)) {
                     this.activateSearchTab();
                     return;
                 }
-                // Advanced Creative Tab (items grid, col 0 top row)
                 if (this.isOverAdvancedTab(relX, relY)) {
                     this.activateItemsTab();
                     return;
                 }
-                // Save tab (bottom row col 1)
                 if (this.isOverSaveTab(relX, relY)) {
                     this.activateSaveTab();
                     return;
                 }
-                // ActX Custom Blocks tab (col 1, top row)
                 if (this.isOverCustomBlocksTab(relX, relY)) {
                     this.activateCustomBlocksTab();
                     return;
@@ -553,9 +533,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         int relX = touchX - this.guiLeft;
         int relY = touchY - this.guiTop;
 
-        // Page switching is handled by the arrow buttons/keys only -- see
-        // the note in mouseReleased. Building Blocks (column 0) is a normal,
-        // fully selectable tab here too.
         if (!this.showingUnobtainable) {
             for (int m = 0; m < CreativeTabs.creativeTabArray.length; ++m) {
                 CreativeTabs creativetabs = CreativeTabs.creativeTabArray[m];
@@ -567,7 +544,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 }
             }
         } else {
-            // On page 2, allow tapping search, items grid, and save tabs
             CreativeTabs searchTab = CreativeTabs.tabAllSearch;
             if (this.func_147049_a(searchTab, relX, relY)) {
                 this.activateSearchTab();
@@ -720,8 +696,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
 
         super.drawScreen(i, j, f);
 
-        // On page 1, show hover text for all tabs.
-        // On page 2, only show hover text for the search tab (others are hidden).
         if (!this.showingUnobtainable) {
             for (int m = 0; m < CreativeTabs.creativeTabArray.length; ++m) {
                 if (this.renderCreativeInventoryHoveringText(CreativeTabs.creativeTabArray[m], i, j)) {
@@ -730,8 +704,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 }
             }
         } else {
-            // On page 2, show hover cursor/text for the search tab, items grid
-            // tab, and Save tab
             if (this.renderCreativeInventoryHoveringText(CreativeTabs.tabAllSearch, i, j)) {
                 Mouse.showCursor(EnumCursorType.HAND);
             }
@@ -771,8 +743,8 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (String key : keys) {
-            if (!first) sb.append("\u00a77, ");
-            sb.append("\u00a7f").append(key);
+            if (!first) sb.append("§7, ");
+            sb.append("§f").append(key);
             first = false;
         }
         return sb.toString();
@@ -796,21 +768,20 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
 
             ResourceLocation regName = Item.itemRegistry.getNameForObject(itemstack.getItem());
             if (regName != null) {
-                lines.add("\u00a77" + regName.toString());
+                lines.add("§7" + regName.toString());
             }
 
             NBTTagCompound nbt = itemstack.getTagCompound();
             if (itemstack.isItemStackDamageable()) {
                 int maxDur = itemstack.getMaxDamage();
                 int curDur = maxDur - itemstack.getItemDamage();
-                // Color: green if full, yellow if damaged, red if critical (<10%)
                 String durColor;
                 if (itemstack.getItemDamage() == 0) {
-                    durColor = "\u00a72"; // green
+                    durColor = "§2"; // green
                 } else if (curDur <= maxDur / 10) {
-                    durColor = "\u00a74"; // red
+                    durColor = "§4"; // red
                 } else {
-                    durColor = "\u00a7e"; // yellow
+                    durColor = "§e"; // yellow
                 }
                 lines.add(I18n.format("durabilityinfo") + durColor + curDur + " / " + maxDur);
             }
@@ -823,10 +794,9 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 }
             }
 
-            // Checking RepairCost using the existing 'nbt' variable
             if (nbt != null && nbt.hasKey("RepairCost")) {
                 int repairCost = nbt.getInteger("RepairCost");
-                String repairColor = repairCost == 0 ? "\u00a72" : "\u00a74";
+                String repairColor = repairCost == 0 ? "§2" : "§4";
                 lines.add(I18n.format("repaircostboi") + repairColor + repairCost);
             }
 
@@ -840,11 +810,9 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                         lines.add(I18n.format("minespeed") + mat.getEfficiencyOnProperMaterial());
                     }
                 } catch (Exception ignored) {
-                    // Falls back cleanly if reflection fails
                 }
             }
 
-            // Tags: count + each key: value
             if (nbt != null) {
                 java.util.Set<String> keys = nbt.getKeySet();
                 lines.add(I18n.format("tagyes") + "(§e" + keys.size() + "§6): " + buildTagSummary(keys));
@@ -852,7 +820,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 lines.add(I18n.format("tagnonada"));
             }
 
-            // Action hints at the bottom
             String giverKeyShift = getKeybindDisplay("gui.act.give");
             String saverKeyShift = getKeybindDisplay("key.actx.saveditems");
             lines.add(I18n.format("gui.act.creative.giverHint", giverKeyShift));
@@ -862,10 +829,8 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
             return;
         }
 
-        // --- Normal tooltip (unchanged existing behavior) ---
         List list = itemstack.getTooltipProfanityFilter(this.mc.thePlayer,
                 this.mc.gameSettings.advancedItemTooltips);
-        // Keybind hints in the tooltip instead of gray screen text
         list.add(I18n.format("moreoptions"));
         if (this.isSearchActive()) {
             CreativeTabs creativetabs = itemstack.getItem().getCreativeTab();
@@ -936,7 +901,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
             }
         }
 
-        // On page 2, always use the items background; only use tab-specific bg on page 1
         String bgName;
             if (this.showingUnobtainable) {
             bgName = (this.page2View == PAGE2_VIEW_SEARCH) ? "item_search.png" : "items.png";
@@ -958,9 +922,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         }
 
         if (this.showingUnobtainable) {
-            // Page 2: draw ONLY the currently-active tab after the background
-            // panel, so it (and only it) renders on top -- mirrors the
-            // selected-tab-on-top behavior page 1 already has below.
             this.mc.getTextureManager().bindTexture(creativeInventoryTabs);
             if (this.page2View == PAGE2_VIEW_ITEMS) {
                 this.func_147051_a(CreativeTabs.creativeTabArray[0]); // command block toggle slot
@@ -972,21 +933,19 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 this.drawCustomBlocksTab(true);                        // custom blocks tab (col 1 top)
             }
         } else {
-            this.func_147051_a(creativetabs); // draw selected tab on top on page 1
+            this.func_147051_a(creativetabs);
         }
         if (this.isInventoryTabActive()) {
             GuiInventory.drawEntityOnScreen(this.guiLeft + 43, this.guiTop + 45, 20,
                     (float) (this.guiLeft + 43 - i), (float) (this.guiTop + 45 - 30 - j), this.mc.thePlayer);
         }
 
-        // Page counter
         GlStateManager.disableLighting();
         String pageText = I18n.format("gui.act.creative.pageCounter", this.currentCategory, 2);
         int centerX = this.guiLeft + this.xSize / 2;
         int textW = this.fontRendererObj.getStringWidth(pageText);
         this.fontRendererObj.drawStringWithShadow(pageText, centerX - textW / 2, this.guiTop - 42, 0xFFFFFF);
 
-        // Keybind hints are shown in tooltips, not as screen text.
     }
 
     protected boolean func_147049_a(CreativeTabs parCreativeTabs, int parInt1, int parInt2) {
@@ -1075,7 +1034,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         i1 = i1 + 8 + (flag1 ? 1 : -1);
         GlStateManager.enableLighting();
         GlStateManager.enableRescaleNormal();
-        // Command block tab col 0 top-row: show command block on page 2, normal icon on page 1
         ItemStack itemstack;
         if (parCreativeTabs.getTabColumn() == 0 && parCreativeTabs.isTabInFirstRow() && this.showingUnobtainable) {
             itemstack = new ItemStack(net.minecraft.init.Blocks.command_block, 1, 0);
@@ -1089,14 +1047,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         this.zLevel = 0.0F;
     }
 
-    /**
-     * Returns true if the given GUI-relative coords land on the
-     * command-block "Advanced Creative" toggle slot (tab col 0, top row).
-     */
-    /**
-     * Finds an ActX (or any) keybinding by its description/lang key.
-     * Returns null if not found.
-     */
     private KeyBinding findKeyBinding(String descriptionKey) {
         for (KeyBinding kb : this.mc.gameSettings.keyBindings) {
             if (descriptionKey.equals(kb.getKeyDescription())) {
@@ -1106,26 +1056,16 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         return null;
     }
 
-    /**
-     * Returns true if the given GUI-relative coords land on the Save tab.
-     * The Save tab mirrors the Advanced Creative Tab but on the bottom row (col 0, bottom).
-     */
     private boolean isOverSaveTab(int relX, int relY) {
-        // col 0, bottom row: x in [0,28], y in [ySize, ySize+32]
         return relX >= 0 && relX <= 28 && relY >= this.ySize && relY <= this.ySize + 32;
     }
 
-    /**
-     * Draws the Save tab on page 2 at col 0 bottom row (mirrors Advanced Creative Tab position).
-     * Uses map item as icon.
-     */
     private void drawSaveTab(boolean selected) {
         int tabX = this.guiLeft; // Column 0
         int tabY = this.guiTop + (this.ySize - 4); // Bottom row
         int texX = 0; // Texture column 0
         int texY = 64 + (selected ? 32 : 0); // Bottom row: unselected=64, selected=96
 
-    // 1. Force zLevel back to 0 so the tab texture doesn't render over the GUI border
         this.zLevel = 0.0F;
         this.itemRender.zLevel = 0.0F;
 
@@ -1133,7 +1073,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         GlStateManager.disableLighting();
         this.drawTexturedModalRect(tabX, tabY, texX, texY, 28, 32);
 
-    // 2. Bump zLevel ONLY for the map icon so it renders above the tab texture
         this.zLevel = 100.0F;
         this.itemRender.zLevel = 100.0F;
         GlStateManager.enableLighting();
@@ -1143,31 +1082,14 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         this.itemRender.renderItemAndEffectIntoGUI(mapStack, tabX + 6, tabY + 7);
         this.itemRender.renderItemOverlays(this.fontRendererObj, mapStack, tabX + 6, tabY + 7);
 
-    // 3. Reset zLevel back to normal
         GlStateManager.disableLighting();
         this.itemRender.zLevel = 0.0F;
         this.zLevel = 0.0F;
     }
-
-    /**
-     * Returns true if the given GUI-relative coords land on the ActX Custom
-     * Blocks tab (col 1, top row - directly right of the Advanced Creative
-     * Tab). Same derivation as isOverSaveTab, using func_147049_a's column/
-     * row formula for column 1, first row: j = 28*1 + 1 (the "i>0 -> j+=i"
-     * gap), k = -32 (first-row offset).
-     */
     private boolean isOverCustomBlocksTab(int relX, int relY) {
         return relX >= 29 && relX <= 57 && relY >= -32 && relY <= 0;
     }
 
-    /**
-     * Draws the ActX Custom Blocks tab on page 2 at col 1 top row (directly
-     * right of the Advanced Creative Tab). Mirrors drawSaveTab's hand-drawn
-     * approach - this isn't a real CreativeTabs entry either - but placed
-     * per func_147051_a's top-row formula instead of the bottom-row one:
-     * tabX = guiLeft + 28*1 + 1, tabY = guiTop - 28, icon offset tabY + 9
-     * (top row uses "+8 +1"; drawSaveTab's bottom row uses "+8 -1" = +7).
-     */
     private void drawCustomBlocksTab(boolean selected) {
         int tabX = this.guiLeft + 28 + 1; // Column 1
         int tabY = this.guiTop - 28;      // Top row
@@ -1206,7 +1128,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         GuiContainerCreative.ContainerCreative container =
                 (GuiContainerCreative.ContainerCreative) this.inventorySlots;
         container.itemList.clear();
-        // Pull saved stacks from saveditems' static list
         for (ItemStack stack : saveditems.getSavedStacks()) {
             if (stack != null) container.itemList.add(stack);
         }

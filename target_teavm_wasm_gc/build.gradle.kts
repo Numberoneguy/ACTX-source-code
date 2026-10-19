@@ -122,7 +122,7 @@ eaglercraftBuild {
 			epwSearchDirectory = file(wasmFolder)
 			clientBundleOutputDir = file("javascript_dist")
 		}.apply {
-			epkSources = file("../desktopRuntime/resources")
+			epkSources = file("epk_src")
 			epkOutput = file("javascript/assets.epk")
 
 			languageMetadataInput = file("../target_teavm_javascript/javascript/lang")

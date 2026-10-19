@@ -50,6 +50,9 @@ public abstract class AbstractClientPlayer extends EntityPlayer {
 	public float eaglerHighPolyAnimationFloat4 = 0.0f;
 	public float eaglerHighPolyAnimationFloat5 = 0.0f;
 	public float eaglerHighPolyAnimationFloat6 = 0.0f;
+	public float rotateElytraX;
+	public float rotateElytraY;
+	public float rotateElytraZ;
 	public EaglercraftUUID clientBrandUUIDCache = null;
 	private String nameProfanityFilter = null;
 

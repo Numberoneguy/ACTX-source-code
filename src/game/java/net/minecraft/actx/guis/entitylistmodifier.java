@@ -11,6 +11,7 @@ public class entitylistmodifier extends GuiScreen {
     private static final int btn_next = 2;
     private static final int btn_entity_base = 10;
     private static final String[][] entities = {
+    // boring but works out.
         { "gui.none", "0" },
         { "entity.Item.name", "1" },
         { "entity.XPOrb.name", "2" },

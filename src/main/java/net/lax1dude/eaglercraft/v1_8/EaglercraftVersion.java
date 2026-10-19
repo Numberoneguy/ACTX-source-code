@@ -10,7 +10,7 @@ public class EaglercraftVersion {
 	/// Customize these to fit your fork:
 	
 	public static final String projectForkName = "ActX";
-	public static final String projectForkVersion = "v1.7.2";
+	public static final String projectForkVersion = "v1.8.0";
 	public static final String projectForkVendor = "Numberoneguy";
 	
 	public static final String projectForkURL = "https://gitlab.com/Numberoneguy/yesRepo/tree/main/Release";
@@ -44,8 +44,8 @@ public class EaglercraftVersion {
 	
 	// Client brand identification system configuration
 	
-	public static final EaglercraftUUID clientBrandUUID = EagUtils.makeClientBrandUUID(projectForkName);
-
+	public static final EaglercraftUUID clientBrandUUID = EaglercraftUUID.nameUUIDFromBytes(
+        "ACTX:ClientBrand".getBytes(com.google.common.base.Charsets.UTF_8));
 	public static final EaglercraftUUID legacyClientUUIDInSharedWorld = EagUtils.makeClientBrandUUIDLegacy(projectOriginName);
 	
 	

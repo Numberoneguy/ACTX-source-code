@@ -122,6 +122,10 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 	private Minecraft mc;
 	private final IResourceManager resourceManager;
 	private EaglercraftRandom random = new EaglercraftRandom();
+	private ItemStack itemActivationItem;
+	private int itemActivationTicks;
+	private float itemActivationOffX;
+	private float itemActivationOffY;
 	private float farPlaneDistance;
 	public final ItemRenderer itemRenderer;
 	private final MapItemRenderer theMapItemRenderer;
@@ -290,6 +294,13 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 			this.bossColorModifier -= 0.0125F;
 		}
 
+		if (this.itemActivationTicks > 0) {
+			--this.itemActivationTicks;
+			if (this.itemActivationTicks == 0) {
+				this.itemActivationItem = null;
+			}
+		}
+
 	}
 
 	public void updateShaderGroupSize(int width, int height) {
@@ -391,7 +402,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 	 */
 	private void updateFovModifierHand() {
 		float f = 1.0F;
-		if (this.mc.getRenderViewEntity() instanceof AbstractClientPlayer) {
+		if (this.mc.gameSettings.dynamicFovOF && this.mc.getRenderViewEntity() instanceof AbstractClientPlayer) {
 			AbstractClientPlayer abstractclientplayer = (AbstractClientPlayer) this.mc.getRenderViewEntity();
 			f = abstractclientplayer.getFovModifier();
 		}
@@ -953,9 +964,11 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 				}
 				if (b) {
 					this.setupOverlayRendering();
+					this.renderItemActivation(l, i1, parFloat1);
 					GlStateManager.disableLighting();
 					GlStateManager.enableBlend();
-					if (Minecraft.isFancyGraphicsEnabled()) {
+					int vignetteModeOF = this.mc.gameSettings.vignetteOF;
+					if (vignetteModeOF == 2 || (vignetteModeOF == 0 && Minecraft.isFancyGraphicsEnabled())) {
 						this.mc.ingameGUI.renderVignette(this.mc.thePlayer.getBrightness(parFloat1), l, i1);
 					}
 					this.mc.ingameGUI.renderGameOverlayCrosshairs(l, i1);
@@ -1226,7 +1239,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 
 		this.setupFog(0, partialTicks);
 		GlStateManager.shadeModel(GL_SMOOTH);
-		if (entity.posY + (double) entity.getEyeHeight() < 128.0D) {
+		if (entity.posY + (double) entity.getEyeHeight() < (double) this.mc.gameSettings.getCloudYOF()) {
 			this.renderCloudsCheck(renderglobal, partialTicks, pass);
 		}
 
@@ -1334,7 +1347,7 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 		GlStateManager.enableCull();
 		GlStateManager.disableBlend();
 		GlStateManager.disableFog();
-		if (entity.posY + (double) entity.getEyeHeight() >= 128.0D) {
+		if (entity.posY + (double) entity.getEyeHeight() >= (double) this.mc.gameSettings.getCloudYOF()) {
 			this.renderCloudsCheck(renderglobal, partialTicks, pass);
 		}
 
@@ -1847,7 +1860,8 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 					&& ((EntityLivingBase) entity).isPotionActive(Potion.waterBreathing)) {
 				GlStateManager.setFogDensity(0.01F);
 			} else {
-				GlStateManager.setFogDensity(0.1F - (float) EnchantmentHelper.getRespiration(entity) * 0.03F);
+				GlStateManager.setFogDensity(this.mc.gameSettings.clearWaterOF ? 0.02F
+						: 0.1F - (float) EnchantmentHelper.getRespiration(entity) * 0.03F);
 			}
 		} else if (block.getMaterial() == Material.lava) {
 			GlStateManager.setFog(GL_EXP);
@@ -1863,8 +1877,9 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 				GlStateManager.setFogStart(0.0F);
 				GlStateManager.setFogEnd(f);
 			} else {
-				GlStateManager.setFogStart(f * 0.75F);
-				GlStateManager.setFogEnd(f);
+				float fogStartOF = f * this.mc.gameSettings.getFogStartFactorOF();
+				GlStateManager.setFogStart(fogStartOF);
+				GlStateManager.setFogEnd(Math.max(f, fogStartOF + 1.0F));
 			}
 
 			if (this.mc.theWorld.provider.doesXZShowFog((int) entity.posX, (int) entity.posZ)) {
@@ -1886,6 +1901,44 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 		this.fogColorBuffer.put(red).put(green).put(blue).put(alpha);
 		this.fogColorBuffer.flip();
 		return this.fogColorBuffer;
+	}
+
+	public void displayItemActivation(ItemStack stack) {
+		this.itemActivationItem = stack;
+		this.itemActivationTicks = 40;
+		this.itemActivationOffX = this.random.nextFloat() * 2.0F - 1.0F;
+		this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
+	}
+
+	private void renderItemActivation(int width, int height, float partialTicks) {
+		if (this.itemActivationItem != null && this.itemActivationTicks > 0) {
+			int i = 40 - this.itemActivationTicks;
+			float f = ((float) i + partialTicks) / 40.0F;
+			float f1 = f * f;
+			float f2 = f * f1;
+			float f3 = 10.25F * f2 * f1 + -24.95F * f1 * f1 + 25.5F * f2 + -13.8F * f1 + 4.0F * f;
+			float f4 = f3 * (float) Math.PI;
+			float f5 = this.itemActivationOffX * (float) (width / 4);
+			float f6 = this.itemActivationOffY * (float) (height / 4);
+			GlStateManager.enableAlpha();
+			GlStateManager.pushMatrix();
+			GlStateManager.enableDepth();
+			GlStateManager.disableCull();
+			RenderHelper.enableStandardItemLighting();
+			GlStateManager.translate((float) (width / 2) + f5 * MathHelper.abs(MathHelper.sin(f4 * 2.0F)),
+					(float) (height / 2) + f6 * MathHelper.abs(MathHelper.sin(f4 * 2.0F)), -50.0F);
+			float f7 = 50.0F + 175.0F * MathHelper.sin(f4);
+			GlStateManager.scale(f7, -f7, f7);
+			GlStateManager.rotate(900.0F * MathHelper.abs(MathHelper.sin(f4)), 0.0F, 1.0F, 0.0F);
+			GlStateManager.rotate(6.0F * MathHelper.cos(f * 8.0F), 1.0F, 0.0F, 0.0F);
+			GlStateManager.rotate(6.0F * MathHelper.cos(f * 8.0F), 0.0F, 0.0F, 1.0F);
+			this.mc.getRenderItem().renderItemModelForEntity(this.itemActivationItem, this.mc.thePlayer,
+           		net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType.FIXED);
+			GlStateManager.popMatrix();
+			RenderHelper.disableStandardItemLighting();
+			GlStateManager.enableCull();
+			GlStateManager.disableDepth();
+		}
 	}
 
 	public MapItemRenderer getMapItemRenderer() {
@@ -2552,7 +2605,8 @@ public class EntityRenderer implements IResourceManagerReloadListener {
 				DeferredStateManager.enableFogExp(0.01F, false, fogColorRed, fogColorGreen, fogColorBlue, 1.0f,
 						fogColorRed * ff, fogColorGreen * ff, fogColorBlue * ff, 1.0f);
 			} else {
-				DeferredStateManager.enableFogExp(0.1F - (float) EnchantmentHelper.getRespiration(entity) * 0.03F,
+				DeferredStateManager.enableFogExp(this.mc.gameSettings.clearWaterOF ? 0.02F
+						: 0.1F - (float) EnchantmentHelper.getRespiration(entity) * 0.03F,
 						false, fogColorRed, fogColorGreen, fogColorBlue, 1.0f, fogColorRed * ff, fogColorGreen * ff,
 						fogColorBlue * ff, 1.0f);
 			}

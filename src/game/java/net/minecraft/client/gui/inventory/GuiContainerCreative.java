@@ -20,7 +20,8 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.achievement.GuiAchievements;
 import net.minecraft.client.gui.achievement.GuiStats;
 import net.minecraft.actx.saveditems;
-import net.minecraft.actx.actxcreativetabs;
+import net.minecraft.actx.creative.actxcreativetabs;
+import net.minecraft.actx.creative.actxcreativeitems;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
@@ -42,6 +43,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.lax1dude.eaglercraft.v1_8.log4j.LogManager;
+import net.lax1dude.eaglercraft.v1_8.log4j.Logger;
 
 /**+
  * This portion of EaglercraftX contains deobfuscated Minecraft 1.8 source code.
@@ -64,6 +67,26 @@ import net.minecraft.util.ResourceLocation;
  *
  */
 public class GuiContainerCreative extends InventoryEffectRenderer {
+    private static final Logger logger = LogManager.getLogger();
+
+    private boolean onViaServer() {
+        net.lax1dude.eaglercraft.v1_8.socket.EaglercraftNetworkManager manager = this.mc.thePlayer.sendQueue.getNetworkManager();
+        return !(manager instanceof net.lax1dude.eaglercraft.v1_8.sp.socket.ClientIntegratedServerNetworkManager)
+                && !(manager instanceof net.lax1dude.eaglercraft.v1_8.sp.lan.LANClientNetworkManager);
+    }
+
+    private void sendCreativeSlot(ItemStack stack, int slot) {
+        boolean via = this.onViaServer();
+        ItemStack converted = net.minecraft.actx.server.actxviaitemfix.toServer(stack, via);
+        logger.info("creative send: via={} in={} out={}", via, stack == null ? null : stack.getItem(),
+                converted == null ? null : converted.getItem());
+        this.mc.playerController.sendSlotPacket(converted, slot);
+    }
+
+    private void sendCreativeDrop(ItemStack stack) {
+        this.mc.playerController.sendPacketDropItem(
+                net.minecraft.actx.server.actxviaitemfix.toServer(stack, this.onViaServer()));
+    }
     /**+
      * The location of the creative inventory tabs texture
      */
@@ -90,8 +113,16 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
     private static final int PAGE2_VIEW_SEARCH = 1;
     private static final int PAGE2_VIEW_SAVED  = 2;
     private static final int PAGE2_VIEW_CUSTOM_BLOCKS = 3;
+    private static final int key_left = 203;
+    private static final int key_right = 205;
     private int page2View = PAGE2_VIEW_ITEMS;
     private int lastPage1TabIndex = selectedTabIndex;
+    // remembered state so switching pages brings everything back exactly as it was
+    private int savedPage2View = PAGE2_VIEW_ITEMS;
+    private float savedPage2Scroll = 0.0F;
+    private String savedPage2Search = "";
+    private float savedPage1Scroll = 0.0F;
+    private String savedPage1Search = "";
 
     public GuiContainerCreative(EntityPlayer parEntityPlayer) {
         super(new GuiContainerCreative.ContainerCreative(parEntityPlayer));
@@ -130,13 +161,13 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         if (inventoryplayer1.getItemStack() != null) {
             if (j == 0) {
                 this.mc.thePlayer.dropPlayerItemWithRandomChoice(inventoryplayer1.getItemStack(), true);
-                this.mc.playerController.sendPacketDropItem(inventoryplayer1.getItemStack());
+                this.sendCreativeDrop(inventoryplayer1.getItemStack());
                 inventoryplayer1.setItemStack((ItemStack) null);
             }
             if (j == 1) {
                 ItemStack itemstack5 = inventoryplayer1.getItemStack().splitStack(1);
                 this.mc.thePlayer.dropPlayerItemWithRandomChoice(itemstack5, true);
-                this.mc.playerController.sendPacketDropItem(itemstack5);
+                this.sendCreativeDrop(itemstack5);
                 if (inventoryplayer1.getItemStack().stackSize == 0) {
                     inventoryplayer1.setItemStack((ItemStack) null);
                 }
@@ -144,7 +175,7 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         }
     } else if (slot == this.field_147064_C && flag) {
         for (int i1 = 0; i1 < this.mc.thePlayer.inventoryContainer.getInventory().size(); ++i1) {
-            this.mc.playerController.sendSlotPacket((ItemStack) null, i1);
+            this.sendCreativeSlot((ItemStack) null, i1);
         }
     } else if (this.isInventoryTabActive()) {
         if (slot == this.field_147064_C) {
@@ -152,10 +183,10 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         } else if (k == 4 && slot != null && slot.getHasStack()) {
             ItemStack itemstack = slot.decrStackSize(j == 0 ? 1 : slot.getStack().getMaxStackSize());
             this.mc.thePlayer.dropPlayerItemWithRandomChoice(itemstack, true);
-            this.mc.playerController.sendPacketDropItem(itemstack);
+            this.sendCreativeDrop(itemstack);
         } else if (k == 4 && this.mc.thePlayer.inventory.getItemStack() != null) {
             this.mc.thePlayer.dropPlayerItemWithRandomChoice(this.mc.thePlayer.inventory.getItemStack(), true);
-            this.mc.playerController.sendPacketDropItem(this.mc.thePlayer.inventory.getItemStack());
+            this.sendCreativeDrop(this.mc.thePlayer.inventory.getItemStack());
             this.mc.thePlayer.inventory.setItemStack((ItemStack) null);
         } else {
             this.mc.thePlayer.inventoryContainer.slotClick(
@@ -189,7 +220,7 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                     ItemStack itemstack3 = itemstack2.copy();
                     itemstack3.stackSize = j == 0 ? 1 : itemstack3.getMaxStackSize();
                     this.mc.thePlayer.dropPlayerItemWithRandomChoice(itemstack3, true);
-                    this.mc.playerController.sendPacketDropItem(itemstack3);
+                    this.sendCreativeDrop(itemstack3);
                 }
                 return;
             }
@@ -218,11 +249,11 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
             this.inventorySlots.slotClick(slot == null ? i : slot.slotNumber, j, k, this.mc.thePlayer);
             if (Container.getDragEvent(j) == 2) {
                 for (int l = 0; l < 9; ++l) {
-                    this.mc.playerController.sendSlotPacket(this.inventorySlots.getSlot(45 + l).getStack(), 36 + l);
+                    this.sendCreativeSlot(this.inventorySlots.getSlot(45 + l).getStack(), 36 + l);
                 }
             } else if (slot != null) {
                 ItemStack itemstack4 = this.inventorySlots.getSlot(slot.slotNumber).getStack();
-                this.mc.playerController.sendSlotPacket(itemstack4,
+                this.sendCreativeSlot(itemstack4,
                         slot.slotNumber - this.inventorySlots.inventorySlots.size() + 9 + 36);
             }
         }
@@ -251,10 +282,8 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
             this.searchField.setVisible(false);
             this.searchField.setTextColor(16777215);
 
-            this.buttonList.add(this.buttonLeft  = new GuiButton(101, this.guiLeft - 24, this.guiTop - 26, 20, 20, "<"));
-            this.buttonList.add(this.buttonRight = new GuiButton(102, this.guiLeft + this.xSize + 4, this.guiTop - 26, 20, 20, ">"));
-            this.buttonLeft.enabled  = false;
-            this.buttonRight.enabled = true;
+            this.buttonList.add(this.buttonLeft  = new GuiButton(101, this.guiLeft, this.guiTop - 50, 20, 20, "<"));
+            this.buttonList.add(this.buttonRight = new GuiButton(102, this.guiLeft + this.xSize - 20, this.guiTop - 50, 20, 20, ">"));
 
             int i = selectedTabIndex;
             selectedTabIndex = -1;
@@ -281,36 +310,12 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
      * Fired when a key is typed.
      */
     protected void keyTyped(char parChar1, int parInt1) {
-        if (parChar1 == '<' || parChar1 == ',') {
-            if (this.currentCategory > 1) {
-                this.currentCategory--;
-                this.showingUnobtainable = false;
-                this.page2View = PAGE2_VIEW_ITEMS;
-                this.showingSavedItems = false;
-                this.setCurrentCreativeTab(CreativeTabs.creativeTabArray[this.lastPage1TabIndex]);
-                if (this.buttonLeft  != null) this.buttonLeft.enabled  = (this.currentCategory > 1);
-                if (this.buttonRight != null) this.buttonRight.enabled = (this.currentCategory < 2);
-            }
+        if (parChar1 == '<' || parChar1 == ',' || (parInt1 == key_left && !this.isSearchActive())) {
+            this.pagePrev();
             return;
         }
-        if (parChar1 == '>' || parChar1 == '.') {
-            if (this.currentCategory < 2) {
-                this.lastPage1TabIndex = selectedTabIndex;
-                this.currentCategory++;
-                this.restoreInventorySlotsIfNeeded();
-                this.showingUnobtainable = true;
-                this.page2View = PAGE2_VIEW_ITEMS;
-                this.showingSavedItems = false;
-                this.dragSplittingSlots.clear();
-                this.loadUnobtainableItems();
-                if (this.searchField != null) {
-                    this.searchField.setVisible(false);
-                    this.searchField.setCanLoseFocus(true);
-                    this.searchField.setFocused(false);
-                }
-                if (this.buttonLeft  != null) this.buttonLeft.enabled  = (this.currentCategory > 1);
-                if (this.buttonRight != null) this.buttonRight.enabled = (this.currentCategory < 2);
-            }
+        if (parChar1 == '>' || parChar1 == '.' || (parInt1 == key_right && !this.isSearchActive())) {
+            this.pageNext();
             return;
         }
 
@@ -453,10 +458,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
 
     /**+
      * Called when the mouse is clicked.
-     *
-     * mouseClicked only swallows the click (so slot logic below doesn't
-     * fire) when it's on a tab; mouseReleased is the single authoritative
-     * handler that actually performs the tab switch.
      */
     protected void mouseClicked(int parInt1, int parInt2, int parInt3) {
         if (parInt3 == 0 && !this.showingUnobtainable) {
@@ -476,14 +477,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
 
     /**+
      * Called when a mouse button is released.
-     *
-     * This is the SINGLE authoritative handler for all tab switching.
-     * It handles two cases in order:
-     *   1. Normal tab click on page 1 (any of the regular tabs, including
-     *      Building Blocks at column 0 -- it is a real, selectable tab).
-     *   2. Search/Save tab clicks on page 2.
-     * Page 1 <-> page 2 switching is handled entirely by the buttonLeft/
-     * buttonRight arrows and the '<'/'>' keys, not by clicking a tab.
      */
     protected void mouseReleased(int i, int j, int k) {
         if (k == 0) {
@@ -496,8 +489,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                     if (this.func_147049_a(creativetabs, relX, relY)) {
                         this.showingUnobtainable = false;
                         this.currentCategory = 1;
-                        if (this.buttonLeft  != null) this.buttonLeft.enabled  = false;
-                        if (this.buttonRight != null) this.buttonRight.enabled = true;
                         this.setCurrentCreativeTab(creativetabs);
                         return;
                     }
@@ -559,10 +550,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         super.touchTapped(touchX, touchY, uid);
     }
 
-    /**+
-     * Returns (if you are not on the inventoryTab) and (the flag isn't set)
-     * and (you have more than 1 page of items).
-     */
     private boolean needsScrollBars() {
         return !this.showingUnobtainable
                 && selectedTabIndex != CreativeTabs.tabInventory.getTabIndex()
@@ -641,12 +628,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         }
     }
 
-    /**
-     * If the Survival Inventory tab's special player-inventory slots (health,
-     * armor, hotbar mirror) are currently active, swap them back out for the
-     * normal creative item-grid slots. Must be called before switching to
-     * page 2, otherwise those slots stay layered on top of the page-2 grid.
-     */
     private void restoreInventorySlotsIfNeeded() {
         if (selectedTabIndex == CreativeTabs.tabInventory.getTabIndex() && this.field_147063_B != null) {
             ((GuiContainerCreative.ContainerCreative) this.inventorySlots).inventorySlots = this.field_147063_B;
@@ -738,7 +719,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         return kb != null ? GameSettings.getKeyDisplayString(kb.getKeyCode()) : "?";
     }
 
-    /** Builds a comma-separated list of NBT tag key names. */
     private String buildTagSummary(java.util.Set<String> keys) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
@@ -777,13 +757,13 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
                 int curDur = maxDur - itemstack.getItemDamage();
                 String durColor;
                 if (itemstack.getItemDamage() == 0) {
-                    durColor = "§2"; // green
+                    durColor = "§2";
                 } else if (curDur <= maxDur / 10) {
-                    durColor = "§4"; // red
+                    durColor = "§4";
                 } else {
-                    durColor = "§e"; // yellow
+                    durColor = "§e";
                 }
-                lines.add(I18n.format("durabilityinfo") + durColor + curDur + " / " + maxDur);
+                lines.add(I18n.format("durabilityinfo") + durColor + curDur + "/" + maxDur);
             }
             
             if (nbt != null && nbt.hasKey("display")) {
@@ -944,7 +924,7 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         String pageText = I18n.format("gui.act.creative.pageCounter", this.currentCategory, 2);
         int centerX = this.guiLeft + this.xSize / 2;
         int textW = this.fontRendererObj.getStringWidth(pageText);
-        this.fontRendererObj.drawStringWithShadow(pageText, centerX - textW / 2, this.guiTop - 42, 0xFFFFFF);
+        this.fontRendererObj.drawStringWithShadow(pageText, centerX - textW / 2, this.guiTop - 44, 0xFFFFFF);
 
     }
 
@@ -1061,10 +1041,10 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
     }
 
     private void drawSaveTab(boolean selected) {
-        int tabX = this.guiLeft; // Column 0
-        int tabY = this.guiTop + (this.ySize - 4); // Bottom row
-        int texX = 0; // Texture column 0
-        int texY = 64 + (selected ? 32 : 0); // Bottom row: unselected=64, selected=96
+        int tabX = this.guiLeft;
+        int tabY = this.guiTop + (this.ySize - 4);
+        int texX = 0;
+        int texY = 64 + (selected ? 32 : 0);
 
         this.zLevel = 0.0F;
         this.itemRender.zLevel = 0.0F;
@@ -1091,10 +1071,10 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
     }
 
     private void drawCustomBlocksTab(boolean selected) {
-        int tabX = this.guiLeft + 28 + 1; // Column 1
-        int tabY = this.guiTop - 28;      // Top row
-        int texX = 28;                     // Texture column 1
-        int texY = selected ? 32 : 0;      // Top row: unselected=0, selected=32
+        int tabX = this.guiLeft + 28 + 1;
+        int tabY = this.guiTop - 28;
+        int texX = 28;
+        int texY = selected ? 32 : 0; 
 
         this.zLevel = 0.0F;
         this.itemRender.zLevel = 0.0F;
@@ -1117,10 +1097,6 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         this.zLevel = 0.0F;
     }
 
-    /**
-     * Loads the player's saved items (from saveditems) directly into the creative grid.
-     * The save tab on page 2 (map icon) triggers this inline — no screen switch.
-     */
     private boolean showingSavedItems = false;
 
     private void openSavedItemsTab() {
@@ -1148,24 +1124,88 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         GuiContainerCreative.ContainerCreative container =
                 (GuiContainerCreative.ContainerCreative) this.inventorySlots;
         container.itemList.clear();
-        container.itemList.addAll(net.minecraft.actx.utils.actxcreativeitems.getAdvancedCreativeItems());
+        container.itemList.addAll(actxcreativeitems.getAdvancedCreativeItems());
 
         this.currentScroll = 0.0F;
         container.scrollTo(0.0F);
     }
 
-    /**
-     * Loads the ActX Custom Blocks tab's item list (block 198, plus command
-     * block metadata 1/2). Mirrors loadUnobtainableItems().
-     */
     private void loadCustomBlockItems() {
         GuiContainerCreative.ContainerCreative container =
                 (GuiContainerCreative.ContainerCreative) this.inventorySlots;
         container.itemList.clear();
-        container.itemList.addAll(net.minecraft.actx.utils.actxcreativeitems.getCustomBlockItems());
+        container.itemList.addAll(actxcreativeitems.getCustomBlockItems());
 
         this.currentScroll = 0.0F;
         container.scrollTo(0.0F);
+    }
+
+    private void applyScroll(float scroll) {
+        GuiContainerCreative.ContainerCreative container =
+                (GuiContainerCreative.ContainerCreative) this.inventorySlots;
+        this.currentScroll = MathHelper.clamp_float(scroll, 0.0F, 1.0F);
+        container.scrollTo(this.currentScroll);
+    }
+
+    /** Buttons stay enabled; pressing them at the first/last page simply does nothing. */
+    private void pagePrev() {
+        if (this.currentCategory > 1) {
+            this.savedPage2View = this.page2View;
+            this.savedPage2Scroll = this.currentScroll;
+            this.savedPage2Search = this.searchField != null ? this.searchField.getText() : "";
+
+            this.currentCategory--;
+            this.showingUnobtainable = false;
+            this.page2View = PAGE2_VIEW_ITEMS;
+            this.showingSavedItems = false;
+
+            CreativeTabs tab = CreativeTabs.creativeTabArray[this.lastPage1TabIndex];
+            this.setCurrentCreativeTab(tab);
+            if (tab == CreativeTabs.tabAllSearch && this.searchField != null) {
+                this.searchField.setText(this.savedPage1Search);
+                this.updateCreativeSearch();
+            }
+            this.applyScroll(this.savedPage1Scroll);
+        }
+    }
+
+    private void pageNext() {
+        if (this.currentCategory < 2) {
+            this.lastPage1TabIndex = selectedTabIndex;
+            this.savedPage1Scroll = this.currentScroll;
+            this.savedPage1Search = this.searchField != null ? this.searchField.getText() : "";
+
+            this.currentCategory++;
+            this.restoreInventorySlotsIfNeeded();
+            this.showingUnobtainable = true;
+            this.dragSplittingSlots.clear();
+            this.restorePage2View();
+        }
+    }
+
+    private void restorePage2View() {
+        switch (this.savedPage2View) {
+        case PAGE2_VIEW_SEARCH:
+            this.setCurrentCreativeTab(CreativeTabs.tabAllSearch);
+            this.page2View = PAGE2_VIEW_SEARCH;
+            this.showingSavedItems = false;
+            if (this.searchField != null) {
+                this.searchField.setText(this.savedPage2Search);
+            }
+            this.updateCreativeSearch();
+            break;
+        case PAGE2_VIEW_SAVED:
+            this.openSavedItemsTab();
+            this.page2View = PAGE2_VIEW_SAVED;
+            break;
+        case PAGE2_VIEW_CUSTOM_BLOCKS:
+            this.activateCustomBlocksTab();
+            break;
+        default:
+            this.activateItemsTab();
+            break;
+        }
+        this.applyScroll(this.savedPage2Scroll);
     }
 
     /**+
@@ -1180,50 +1220,16 @@ public class GuiContainerCreative extends InventoryEffectRenderer {
         }
 
         if (parGuiButton.id == 101) {
-            // Left arrow: back to page 1
-            if (this.currentCategory > 1) {
-                this.currentCategory--;
-                this.showingUnobtainable = false;
-                this.page2View = PAGE2_VIEW_ITEMS;
-                this.showingSavedItems = false;
-                this.setCurrentCreativeTab(CreativeTabs.creativeTabArray[this.lastPage1TabIndex]);
-            }
+            this.pagePrev();
         } else if (parGuiButton.id == 102) {
-            // Right arrow: page 2
-            if (this.currentCategory < 2) {
-                this.lastPage1TabIndex = selectedTabIndex;
-                this.currentCategory++;
-                this.restoreInventorySlotsIfNeeded();
-                this.showingUnobtainable = true;
-                this.page2View = PAGE2_VIEW_ITEMS;
-                this.showingSavedItems = false;
-                this.dragSplittingSlots.clear();
-                this.loadUnobtainableItems();
-                if (this.searchField != null) {
-                    this.searchField.setVisible(false);
-                    this.searchField.setCanLoseFocus(true);
-                    this.searchField.setFocused(false);
-                }
-            }
+            this.pageNext();
         }
-        if (this.buttonLeft  != null) this.buttonLeft.enabled  = (this.currentCategory > 1);
-        if (this.buttonRight != null) this.buttonRight.enabled = (this.currentCategory < 2);
     }
 
     public int getSelectedTabIndex() {
         return selectedTabIndex;
     }
 
-    /**
-     * Translates '&' color codes (e.g. "&cRed &lBold") into real Minecraft
-     * formatting codes so they render as colors/styles instead of literal
-     * text. Only touches '&' when it's immediately followed by a valid
-     * 0-9 / a-f / k-o / r code character, so ordinary ampersands (e.g.
-     * "Fish & Chips") are left alone.
-     *
-     * Call this on the typed name right before you store/apply it, e.g.:
-     *   itemStack.setStackDisplayName(GuiContainerCreative.translateColorCodes(typedName));
-     */
     public static String translateColorCodes(String text) {
         if (text == null) return null;
         char[] chars = text.toCharArray();

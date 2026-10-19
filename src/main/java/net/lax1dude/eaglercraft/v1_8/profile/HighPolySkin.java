@@ -88,19 +88,15 @@ public enum HighPolySkin {
 			new ResourceLocation("eagler:mesh/winston.fallback.png")
 	),
 
-	le_verity(
-			new ResourceLocation("eagler:mesh/fuckingverity.png"),       // Texture atlas
-			new ResourceLocation("eagler:mesh/fuckingverity.mdl"),       // Main flat plane mesh
-			null,                                                    // No extra mesh 1
-			null,                                                    // No extra mesh 2
-			new ResourceLocation[] {    
-				new ResourceLocation("eagler:mesh/fuckingverity.mdl")    // Just pass the main mesh as a placeholder here
-			},                               
-			new float[] {
-				2.04f
-			},                                         
-			0.0f,                                                    // Default rotation offset
-			new ResourceLocation("eagler:mesh/fuckingverity.png")        // Fallback texture
+	bigboned(
+			new ResourceLocation("eagler:mesh/cartman_stiched.png"),       
+			new ResourceLocation("eagler:mesh/cartman.mdl"),       
+			null,                                                    
+			null, 
+			new ResourceLocation[] {},                                                  
+			new float[] {},                                         
+			0.0f,                                                    
+			new ResourceLocation("eagler:mesh/cartman_stitched.png")        
 	);
 	public static float highPolyScale = 0.5f;
 

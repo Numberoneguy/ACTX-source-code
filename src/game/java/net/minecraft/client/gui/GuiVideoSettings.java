@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import net.lax1dude.eaglercraft.v1_8.Display;
 import net.lax1dude.eaglercraft.v1_8.minecraft.GuiScreenVideoSettingsWarning;
-import net.lax1dude.eaglercraft.v1_8.opengl.EaglercraftGPU;
 import net.lax1dude.eaglercraft.v1_8.opengl.ext.dynamiclights.DynamicLightsStateManager;
 import net.lax1dude.eaglercraft.v1_8.recording.ScreenRecordingController;
 import net.minecraft.client.resources.I18n;
@@ -43,20 +42,11 @@ public class GuiVideoSettings extends GuiScreen {
 	 * An array of all of GameSettings.Options's video options.
 	 */
 	private static final GameSettings.Options[] videoOptions = new GameSettings.Options[] {
-			GameSettings.Options.GRAPHICS, GameSettings.Options.RENDER_DISTANCE, GameSettings.Options.AMBIENT_OCCLUSION,
-			GameSettings.Options.FRAMERATE_LIMIT, GameSettings.Options.EAGLER_VSYNC, GameSettings.Options.ANAGLYPH,
-			GameSettings.Options.VIEW_BOBBING, GameSettings.Options.GUI_SCALE, GameSettings.Options.GAMMA,
-			GameSettings.Options.RENDER_CLOUDS, GameSettings.Options.PARTICLES, GameSettings.Options.FXAA,
-			GameSettings.Options.MIPMAP_LEVELS, GameSettings.Options.BLOCK_ALTERNATIVES,
-			GameSettings.Options.ENTITY_SHADOWS, GameSettings.Options.FOG, GameSettings.Options.EAGLER_DYNAMIC_LIGHTS,
-			GameSettings.Options.FULLSCREEN, GameSettings.Options.ENCHANTMENT_GLINT,
-			GameSettings.Options.RENDER_WEATHER, GameSettings.Options.RENDER_COLORS,
-			GameSettings.Options.OF_CONNECTED_TEXTURES,
-			GameSettings.Options.OF_BETTER_GRASS, GameSettings.Options.OF_CUSTOM_SKIES,
-			GameSettings.Options.OF_SMART_LEAVES, GameSettings.Options.OF_CUSTOM_ITEMS, GameSettings.Options.FNAW_SKINS,
-			GameSettings.Options.HUD_FPS, GameSettings.Options.HUD_COORDS, GameSettings.Options.HUD_PLAYER,
-			GameSettings.Options.HUD_STATS, GameSettings.Options.HUD_WORLD, GameSettings.Options.HUD_24H,
-			GameSettings.Options.CHUNK_FIX };
+			GameSettings.Options.GRAPHICS, GameSettings.Options.RENDER_DISTANCE, GameSettings.Options.FRAMERATE_LIMIT,
+			GameSettings.Options.EAGLER_VSYNC, GameSettings.Options.FULLSCREEN, GameSettings.Options.VIEW_BOBBING,
+			GameSettings.Options.GUI_SCALE, GameSettings.Options.GAMMA, GameSettings.Options.BLOCK_ALTERNATIVES,
+			GameSettings.Options.EAGLER_DYNAMIC_LIGHTS, GameSettings.Options.OF_QUALITY, GameSettings.Options.OF_DETAILS,
+			GameSettings.Options.OF_PERFORMANCE, GameSettings.Options.OF_ANIMATIONS, GameSettings.Options.OF_OTHER };
 
 	public GuiVideoSettings(GuiScreen parentScreenIn, GameSettings gameSettingsIn) {
 		this.parentGuiScreen = parentScreenIn;
@@ -79,14 +69,6 @@ public class GuiVideoSettings extends GuiScreen {
 			GuiOptionButton btn = ((GuiOptionsRowList) optionsRowList)
 					.getButtonFor(GameSettings.Options.EAGLER_DYNAMIC_LIGHTS);
 			if (btn != null) {
-				btn.enabled = false;
-			}
-		}
-		if (EaglercraftGPU.checkOpenGLESVersion() < 300) {
-			GuiOptionSlider btn = ((GuiOptionsRowList) optionsRowList).getSliderFor(GameSettings.Options.MIPMAP_LEVELS);
-			if (btn != null) {
-				btn.displayString = I18n.format(GameSettings.Options.MIPMAP_LEVELS.getEnumString()) + ": N/A";
-				btn.sliderValue = 0.0f;
 				btn.enabled = false;
 			}
 		}

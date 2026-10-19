@@ -2408,4 +2408,11 @@ public class PlatformInput {
 		visualViewportH = sh;
 	}
 
+
+	public static void setResolutionScale(float scale) {
+	}
+
+	public static float getResolutionScale() {
+		return 1.0f;
+	}
 }

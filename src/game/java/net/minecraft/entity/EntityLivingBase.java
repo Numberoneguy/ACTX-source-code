@@ -17,6 +17,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentBreach;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.BaseAttributeMap;
@@ -32,6 +34,7 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemElytra;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -148,6 +151,13 @@ public abstract class EntityLivingBase extends Entity {
 	private float landMovementFactor;
 	private int jumpTicks;
 	private float absorptionAmount;
+	protected int ticksElytraFlying;
+	protected int elytraBoostTicks;
+	private static final DamageSource flyIntoWall = new DamageSource("flyIntoWall") {
+		{
+			this.setDamageBypassesArmor();
+		}
+	};
 
 	/**+
 	 * Called by the /kill command.
@@ -209,6 +219,77 @@ public abstract class EntityLivingBase extends Entity {
 
 	public boolean canBreatheUnderwater() {
 		return false;
+	}
+	// elytraaaaa
+	public boolean isElytraFlying() {
+		return this.getFlag(7);
+	}
+
+	public int getTicksElytraFlying() {
+		return this.ticksElytraFlying;
+	}
+
+	public void boostElytra(int ticks) {
+		this.elytraBoostTicks = ticks;
+	}
+
+	public void setElytraFlying() {
+		this.setFlag(7, true);
+	}
+
+	public void clearElytraFlying() {
+		this.setFlag(7, true);
+		this.setFlag(7, false);
+	}
+
+	private boolean checkTotemDeathProtection(DamageSource source) {
+		if (source.canHarmInCreative()) {
+			return false;
+		}
+
+		Item totem = Item.getByNameOrId("totem");
+		ItemStack held = this.getHeldItem();
+		if (totem == null || held == null || held.getItem() != totem) {
+			return false;
+		}
+
+		if (this instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer) this;
+			player.inventory.decrStackSize(player.inventory.currentItem, 1);
+		} else {
+			--held.stackSize;
+			if (held.stackSize <= 0) {
+				this.setCurrentItemOrArmor(0, null);
+			}
+		}
+
+		this.setHealth(1.0F);
+		this.clearActivePotions();
+		this.addPotionEffect(new PotionEffect(Potion.regeneration.id, 900, 1));
+		this.addPotionEffect(new PotionEffect(Potion.absorption.id, 100, 1));
+		this.worldObj.setEntityState(this, (byte) 35);
+		return true;
+	}
+
+	private void updateElytra() {
+		boolean flag = this.getFlag(7);
+		if (flag && !this.onGround && !this.isRiding()) {
+			ItemStack itemstack = this.getEquipmentInSlot(3);
+			if (itemstack != null && itemstack.getItem() instanceof ItemElytra && ItemElytra.isUsable(itemstack)) {
+				flag = true;
+				if (!this.worldObj.isRemote && (this.ticksElytraFlying + 1) % 20 == 0) {
+					itemstack.damageItem(1, this);
+				}
+			} else {
+				flag = false;
+			}
+		} else {
+			flag = false;
+		}
+
+		if (!this.worldObj.isRemote) {
+			this.setFlag(7, flag);
+		}
 	}
 
 	/**+
@@ -808,12 +889,14 @@ public abstract class EntityLivingBase extends Entity {
 				}
 
 				if (this.getHealth() <= 0.0F) {
-					String s = this.getDeathSound();
-					if (flag && s != null) {
-						this.playSound(s, this.getSoundVolume(), this.getSoundPitch());
-					}
+					if (!this.checkTotemDeathProtection(damagesource)) {
+						String s = this.getDeathSound();
+						if (flag && s != null) {
+							this.playSound(s, this.getSoundVolume(), this.getSoundPitch());
+						}
 
-					this.onDeath(damagesource);
+						this.onDeath(damagesource);
+					}
 				} else {
 					String s1 = this.getHurtSound();
 					if (flag && s1 != null) {
@@ -1018,8 +1101,13 @@ public abstract class EntityLivingBase extends Entity {
 	 */
 	protected float applyArmorCalculations(DamageSource source, float damage) {
 		if (!source.isUnblockable()) {
-			int i = 25 - this.getTotalArmorValue();
-			float f = damage * (float) i;
+			float armor = (float) this.getTotalArmorValue();
+			Entity attacker = source.getEntity();
+			if (attacker instanceof EntityPlayer && ((EntityPlayer) attacker).getHeldItem() != null) {
+				armor *= EnchantmentBreach.getArmorFactor(EnchantmentHelper
+						.getEnchantmentLevel(Enchantment.breach.effectId, ((EntityPlayer) attacker).getHeldItem()));
+			}
+			float f = damage * (25.0F - armor);
 			this.damageArmor(damage);
 			damage = f / 25.0F;
 		}
@@ -1344,6 +1432,63 @@ public abstract class EntityLivingBase extends Entity {
 		if (this.isServerWorld()) {
 			if (!this.isInWater() || this instanceof EntityPlayer && ((EntityPlayer) this).capabilities.isFlying) {
 				if (!this.isInLava() || this instanceof EntityPlayer && ((EntityPlayer) this).capabilities.isFlying) {
+					if (this.isElytraFlying()) {
+						if (this.motionY > -0.5D) {
+							this.fallDistance = 1.0F;
+						}
+
+						if (this.elytraBoostTicks > 0) {
+							Vec3 boostLook = this.getLookVec();
+							this.motionX += boostLook.xCoord * 0.1D + (boostLook.xCoord * 1.5D - this.motionX) * 0.5D;
+							this.motionY += boostLook.yCoord * 0.1D + (boostLook.yCoord * 1.5D - this.motionY) * 0.5D;
+							this.motionZ += boostLook.zCoord * 0.1D + (boostLook.zCoord * 1.5D - this.motionZ) * 0.5D;
+							--this.elytraBoostTicks;
+						}
+
+						Vec3 glideLook = this.getLookVec();
+						float glidePitch = this.rotationPitch * 0.017453292F;
+						double glideHorizontal = Math.sqrt(glideLook.xCoord * glideLook.xCoord + glideLook.zCoord * glideLook.zCoord);
+						double glideSpeed = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+						double glideLength = glideLook.lengthVector();
+						float glideCos = MathHelper.cos(glidePitch);
+						glideCos = (float) ((double) glideCos * (double) glideCos * Math.min(1.0D, glideLength / 0.4D));
+						this.motionY += -0.08D + (double) glideCos * 0.06D;
+						if (this.motionY < 0.0D && glideHorizontal > 0.0D) {
+							double glideLift = this.motionY * -0.1D * (double) glideCos;
+							this.motionY += glideLift;
+							this.motionX += glideLook.xCoord * glideLift / glideHorizontal;
+							this.motionZ += glideLook.zCoord * glideLift / glideHorizontal;
+						}
+
+						if (glidePitch < 0.0F) {
+							double glideClimb = glideSpeed * (double) (-MathHelper.sin(glidePitch)) * 0.04D;
+							this.motionY += glideClimb * 3.2D;
+							this.motionX -= glideLook.xCoord * glideClimb / glideHorizontal;
+							this.motionZ -= glideLook.zCoord * glideClimb / glideHorizontal;
+						}
+
+						if (glideHorizontal > 0.0D) {
+							this.motionX += (glideLook.xCoord / glideHorizontal * glideSpeed - this.motionX) * 0.1D;
+							this.motionZ += (glideLook.zCoord / glideHorizontal * glideSpeed - this.motionZ) * 0.1D;
+						}
+
+						this.motionX *= 0.9900000095367432D;
+						this.motionY *= 0.9800000190734863D;
+						this.motionZ *= 0.9900000095367432D;
+						this.moveEntity(this.motionX, this.motionY, this.motionZ);
+						if (this.isCollidedHorizontally && !this.worldObj.isRemote) {
+							double glideAfter = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+							float glideDamage = (float) ((glideSpeed - glideAfter) * 10.0D - 3.0D);
+							if (glideDamage > 0.0F) {
+								this.playSound(this.getFallSoundString((int) glideDamage), 1.0F, 1.0F);
+								this.attackEntityFrom(flyIntoWall, glideDamage);
+							}
+						}
+
+						if (this.onGround && !this.worldObj.isRemote) {
+							this.setFlag(7, false);
+						}
+					} else {
 					float f6 = 0.91F;
 					if (this.onGround) {
 						f6 = this.worldObj.getBlockState(new BlockPos(MathHelper.floor_double(this.posX),
@@ -1387,7 +1532,10 @@ public abstract class EntityLivingBase extends Entity {
 						this.motionY = 0.2D;
 					}
 
-					if (this.worldObj.isRemote
+					if (this.isPotionActive(Potion.levitation)) {
+						this.motionY += (0.05D * (double) (this.getActivePotionEffect(Potion.levitation).getAmplifier() + 1)
+								- this.motionY) * 0.2D;
+					} else if (this.worldObj.isRemote
 							&& (!this.worldObj.isBlockLoaded(new BlockPos((int) this.posX, 0, (int) this.posZ))
 									|| !this.worldObj
 											.getChunkFromBlockCoords(new BlockPos((int) this.posX, 0, (int) this.posZ))
@@ -1404,6 +1552,7 @@ public abstract class EntityLivingBase extends Entity {
 					this.motionY *= 0.9800000190734863D;
 					this.motionX *= (double) f6;
 					this.motionZ *= (double) f6;
+					}
 				} else {
 					double d1 = this.posY;
 					this.moveFlying(f, f1, 0.02F);
@@ -1585,6 +1734,12 @@ public abstract class EntityLivingBase extends Entity {
 		}
 
 		this.movedDistance += f2;
+		if (this.isElytraFlying()) {
+			++this.ticksElytraFlying;
+		} else {
+			this.ticksElytraFlying = 0;
+			this.elytraBoostTicks = 0;
+		}
 	}
 
 	protected float func_110146_f(float parFloat1, float parFloat2) {
@@ -1676,6 +1831,7 @@ public abstract class EntityLivingBase extends Entity {
 		this.moveStrafing *= 0.98F;
 		this.moveForward *= 0.98F;
 		this.randomYawVelocity *= 0.9F;
+		this.updateElytra();
 		this.moveEntityWithHeading(this.moveStrafing, this.moveForward);
 		if (!this.worldObj.isRemote) {
 			this.collideWithNearbyEntities();

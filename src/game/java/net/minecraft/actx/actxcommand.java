@@ -1,5 +1,9 @@
 package net.minecraft.actx;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.actx.guis.colormodifier;
 import net.minecraft.actx.guis.itemstackmodifier;
 import net.minecraft.client.gui.EditorState;
@@ -9,7 +13,6 @@ import net.minecraft.client.gui.ChatTranslator;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.HoverEvent;
@@ -24,7 +27,6 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import net.lax1dude.eaglercraft.v1_8.EagRuntime;
-import net.lax1dude.eaglercraft.v1_8.skin_cache.SkinData;
 public final class actxcommand {
     private actxcommand() {}
     private static volatile GuiScreen pendingscreen = null;
@@ -71,6 +73,87 @@ public final class actxcommand {
         new Entry("/act view [opt]", "cmd.act.view", false),
         new Entry("/act clear", "cmd.act.clear", true),
     };
+    private static final String[] subcommands = {
+        "menu", "give", "opengiver", "head", "rfw", "edit", "rename", "enchant", "format", "info",
+        "unbreakable", "translate", "color", "drop", "fov", "copy", "view", "clear", "help"
+    };
+    public static String[] complete(EntityPlayerSP player, String text) {
+        if (!text.startsWith("/act ")) return new String[0];
+        String after = text.substring(4);
+        boolean trailing = after.endsWith(" ");
+        String trimmed = after.trim();
+        String[] parts = trimmed.isEmpty() ? new String[0] : trimmed.split("\\s+");
+        int index = trailing ? parts.length : parts.length - 1;
+        String current = trailing || parts.length == 0 ? "" : parts[parts.length - 1];
+        List<String> options = new ArrayList<String>();
+        collectOptions(player, parts, index, options);
+        List<String> matches = new ArrayList<String>();
+        for (String option : options) {
+            if (option.regionMatches(true, 0, current, 0, current.length())) matches.add(option);
+        }
+        Collections.sort(matches, String.CASE_INSENSITIVE_ORDER);
+        return matches.toArray(new String[matches.size()]);
+    }
+    private static void collectOptions(EntityPlayerSP player, String[] parts, int index, List<String> out) {
+        if (index == 0) {
+            for (String s : subcommands) out.add(s);
+            return;
+        }
+        String sub = parts[0].toLowerCase();
+        switch (sub) {
+            case "give":
+                if (index == 1) {
+                    for (ResourceLocation loc : Item.itemRegistry.getKeys()) {
+                        out.add(loc.getResourceDomain().equals("minecraft") ? loc.getResourcePath() : loc.toString());
+                    }
+                } else if (index == 2) {
+                    out.add("1"); out.add("16"); out.add("32"); out.add("64");
+                }
+                return;
+            case "head":
+                if (index == 1) {
+                    for (NetworkPlayerInfo info : player.sendQueue.getPlayerInfoMap()) {
+                        out.add(info.getGameProfile().getName());
+                    }
+                }
+                return;
+            case "enchant":
+                if (index == 1) {
+                    for (ResourceLocation loc : Enchantment.func_181077_c()) out.add(loc.getResourcePath());
+                } else if (index == 2) {
+                    Integer id = resolveEnchantId(parts[1]);
+                    Enchantment ench = id == null ? null : Enchantment.getEnchantmentById(id);
+                    int max = ench == null ? 5 : Math.max(1, ench.getMaxLevel());
+                    for (int i = 1; i <= max; ++i) out.add(String.valueOf(i));
+                }
+                return;
+            case "unbreakable":
+            case "translate":
+                if (index == 1) { out.add("true"); out.add("false"); }
+                return;
+            case "color":
+                if (index == 1) {
+                    out.add("picker"); out.add("remove"); out.add("set");
+                } else if (index == 2 && parts[1].equalsIgnoreCase("set")) {
+                    out.add("rgb"); out.add("hsl"); out.add("hex");
+                }
+                return;
+            case "copy":
+            case "view":
+                if (index == 1) {
+                    out.add("coords"); out.add("nbt"); out.add("item");
+                    if (sub.equals("copy")) out.add("relay");
+                }
+                return;
+            case "help":
+                if (index == 1) {
+                    int pages = Math.max(1, (sortedentries.length + helppagesize - 1) / helppagesize);
+                    for (int i = 1; i <= pages; ++i) out.add(String.valueOf(i));
+                }
+                return;
+            default:
+        }
+    }
     public static boolean handle(EntityPlayerSP player, String message) {
         String trimmed = message.trim();
         if (!trimmed.equals("/act") && !trimmed.startsWith("/act ")) return false;
@@ -100,7 +183,6 @@ public final class actxcommand {
             case "copy": handleInspect(player, args, false); return true;
             case "view": handleInspect(player, args, true); return true;
             case "clear": handleClear(player); return true;
-            case "download": handleDownload(player, args); return true;
             default:
                 player.addChatMessage(createStyledMessage("cmd.act.mc.invalid", EnumChatFormatting.DARK_RED, "/act help"));
                 return true;
@@ -508,87 +590,6 @@ public final class actxcommand {
         if (t < 1f / 2f) return q;
         if (t < 2f / 3f) return p + (q - p) * (2f / 3f - t) * 6;
         return p;
-    }
-    private static void handleDownload(EntityPlayerSP player, String[] args) {
-        if (args.length < 2) return;
-        String targetname = args[1];
-        EntityPlayer target = player.worldObj.getPlayerEntityByName(targetname);
-        int[] pixels = null;
-        int width = 0, height = 0;
-        if (target != null) {
-            SkinData skin = player.sendQueue.getTextureCache().getPlayerSkin(target.getGameProfile());
-            if (skin != null) {
-                pixels = skin.getPixelData();
-                width = skin.getPixelWidth();
-                height = skin.getPixelHeight();
-            }
-            if (pixels == null && target instanceof AbstractClientPlayer) {
-                AbstractClientPlayer clientplayer = (AbstractClientPlayer) target;
-                ResourceLocation localskinloc = clientplayer.getLocationSkin();
-                if (localskinloc != null) {
-                    net.minecraft.client.renderer.texture.ITextureObject texobj =
-                            net.minecraft.client.Minecraft.getMinecraft().getTextureManager().getTexture(localskinloc);
-                    if (texobj instanceof net.lax1dude.eaglercraft.v1_8.profile.EaglerSkinTexture) {
-                        net.lax1dude.eaglercraft.v1_8.profile.EaglerSkinTexture skintex =
-                                (net.lax1dude.eaglercraft.v1_8.profile.EaglerSkinTexture) texobj;
-                        pixels = skintex.getData();
-                        width = skintex.getWidth();
-                        height = skintex.getHeight();
-                    }
-                }
-            }
-        }
-        byte[] filebytes;
-        String filename;
-        if (pixels != null) {
-            filebytes = encodeBmp(pixels, width, height);
-            filename = targetname + ".bmp";
-        } else {
-            filebytes = EagRuntime.getResourceBytes("assets/eagler/skins/01.default_steve.png");
-            filename = targetname + ".png";
-        }
-        if (filebytes != null) {
-            EagRuntime.downloadFileWithName(filename, filebytes);
-        }
-    }
-    private static byte[] encodeBmp(int[] pixels, int width, int height) {
-        int rowsize = width * 4;
-        int pixeldatasize = rowsize * height;
-        int filesize = 54 + pixeldatasize;
-        byte[] out = new byte[filesize];
-        out[0] = 'B'; out[1] = 'M';
-        writeIntLE(out, 2, filesize);
-        writeIntLE(out, 10, 54);
-        writeIntLE(out, 14, 40);
-        writeIntLE(out, 18, width);
-        writeIntLE(out, 22, height);
-        writeShortLE(out, 26, 1);
-        writeShortLE(out, 28, 32);
-        writeIntLE(out, 30, 0);
-        writeIntLE(out, 34, pixeldatasize);
-        int p = 54;
-        for (int y = height - 1; y >= 0; --y) {
-            int rowstart = y * width;
-            for (int x = 0; x < width; ++x) {
-                int px = pixels[rowstart + x];
-                byte r = (byte) ((px >> 24) & 0xFF);
-                byte g = (byte) ((px >> 16) & 0xFF);
-                byte b = (byte) ((px >> 8) & 0xFF);
-                byte a = (byte) (px & 0xFF);
-                out[p++] = b;
-                out[p++] = g;
-                out[p++] = r;
-                out[p++] = a;
-            }
-        }
-        return out;
-    }
-    private static void writeIntLE(byte[] b, int off, int v) {
-        b[off] = (byte) v; b[off + 1] = (byte) (v >>> 8);
-        b[off + 2] = (byte) (v >>> 16); b[off + 3] = (byte) (v >>> 24);
-    }
-    private static void writeShortLE(byte[] b, int off, int v) {
-        b[off] = (byte) v; b[off + 1] = (byte) (v >>> 8);
     }
     private static void withHeldItem(EntityPlayerSP player, Consumer<EditorState> edit) {
         ItemStack held = player.inventory.getCurrentItem();

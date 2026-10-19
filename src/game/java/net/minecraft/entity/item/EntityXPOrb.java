@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.enchantment.EnchantmentMending;
 import net.minecraft.world.World;
 
 /**+
@@ -223,7 +224,8 @@ public class EntityXPOrb extends Entity {
 				this.worldObj.playSoundAtEntity(entityplayer, "random.orb", 0.1F,
 						0.5F * ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.8F));
 				entityplayer.onItemPickup(this, 1);
-				entityplayer.addExperience(this.xpValue);
+				int remaining = EnchantmentMending.repairWithXp(entityplayer, this.xpValue);
+				if (remaining > 0) entityplayer.addExperience(remaining);
 				this.setDead();
 			}
 

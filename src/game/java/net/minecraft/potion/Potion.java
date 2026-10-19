@@ -138,6 +138,8 @@ public class Potion {
 	 */
 	public static final Potion saturation = (new PotionHealth(23, new ResourceLocation("saturation"), false, 16262179))
 			.setPotionName("potion.saturation");
+	public static final Potion levitation = (new Potion(25, new ResourceLocation("levitation"), true, 13565951))
+			.setPotionName("potion.levitation").setIconIndex(3, 2);
 	public static final Potion field_180153_z = null;
 	public static final Potion field_180147_A = null;
 	public static final Potion field_180148_B = null;

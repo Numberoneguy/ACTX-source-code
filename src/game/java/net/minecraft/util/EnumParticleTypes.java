@@ -41,7 +41,7 @@ public enum EnumParticleTypes {
 	SNOWBALL("snowballpoof", 31, false), SNOW_SHOVEL("snowshovel", 32, false), SLIME("slime", 33, false),
 	HEART("heart", 34, false), BARRIER("barrier", 35, false), ITEM_CRACK("iconcrack_", 36, false, 2),
 	BLOCK_CRACK("blockcrack_", 37, false, 1), BLOCK_DUST("blockdust_", 38, false, 1), WATER_DROP("droplet", 39, false),
-	ITEM_TAKE("take", 40, false), MOB_APPEARANCE("mobappearance", 41, true);
+	ITEM_TAKE("take", 40, false), MOB_APPEARANCE("mobappearance", 41, true), TOTEM("totem", 47, false);
 
 	public static final EnumParticleTypes[] _VALUES = values();
 

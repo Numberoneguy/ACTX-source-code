@@ -363,7 +363,7 @@ public class saveditems extends GuiScreen {
         drawDefaultBackground();
         this.fontRendererObj.drawStringWithShadow("\u00a76" + I18n.format("gui.act.search") + ":\u00a7r", 4, top_pad + 8, 0xFFFFFF);
         this.searchfield.drawTextBox();
-        RenderHelper.enableGUIStandardItemLighting();
+        RenderHelper.disableStandardItemLighting();
         GlStateManager.enableRescaleNormal();
         GlStateManager.enableDepth();
         for (int i = 0; i < visiblerows * cols; i++) {

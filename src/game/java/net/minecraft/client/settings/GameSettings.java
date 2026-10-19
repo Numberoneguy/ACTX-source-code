@@ -199,6 +199,10 @@ public class GameSettings {
 	public boolean debugCamEnable;
 	public float fovSetting;
 	public float gammaSetting;
+	public float ofCloudHeight = 0.0F;
+	public float ofFogStart = 1.95F;
+	public float ofChunkUpdates = 5.0F;
+	public float ofResolutionScale = 1.0F;
 	public float saturation;
 	/**+
 	 * GUI scale
@@ -247,6 +251,34 @@ public class GameSettings {
 	public boolean customSkyOF = true;
 	public boolean smartLeavesOF = false;
 	public boolean customItemsOF = true;
+	public boolean customFontsOF = true;
+	public boolean clearWaterOF = false;
+	public boolean dynamicFovOF = true;
+	public boolean skyOF = true;
+	public boolean starsOF = true;
+	public boolean sunMoonOF = true;
+	public boolean swampColorsOF = true;
+	public boolean smoothBiomesOF = true;
+	public int vignetteOF = 0;
+	public int droppedItemsOF = 0;
+	public int translucentOF = 0;
+	public boolean waterAnimatedOF = true;
+	public boolean lavaAnimatedOF = true;
+	public boolean fireAnimatedOF = true;
+	public boolean portalAnimatedOF = true;
+	public boolean terrainAnimatedOF = true;
+	public boolean texturesAnimatedOF = true;
+	public boolean waterParticlesOF = true;
+	public boolean rainSplashOF = true;
+	public boolean portalParticlesOF = true;
+	public boolean potionParticlesOF = true;
+	public boolean voidParticlesOF = true;
+	public boolean drippingOF = true;
+	public boolean fireworkParticlesOF = true;
+	public boolean redstoneAnimatedOF = true;
+	public boolean explosionAnimatedOF = true;
+	public boolean flameAnimatedOF = true;
+	public boolean smokeAnimatedOF = true;
 
 public GameSettings(Minecraft mcIn) {
         this.keyBindings = (KeyBinding[]) ArrayUtils.addAll(new KeyBinding[] { 
@@ -323,6 +355,23 @@ public GameSettings(Minecraft mcIn) {
 	 * value), this will set the float value.
 	 */
 	public void setOptionFloatValue(GameSettings.Options parOptions, float parFloat1) {
+		if (parOptions == GameSettings.Options.OF_CLOUD_HEIGHT) {
+			this.ofCloudHeight = parFloat1;
+		}
+
+		if (parOptions == GameSettings.Options.OF_FOG_START) {
+			this.ofFogStart = parFloat1;
+		}
+
+		if (parOptions == GameSettings.Options.OF_CHUNK_UPDATES) {
+			this.ofChunkUpdates = parFloat1;
+		}
+
+		if (parOptions == GameSettings.Options.OF_RESOLUTION_SCALE && this.ofResolutionScale != parFloat1) {
+			this.ofResolutionScale = parFloat1;
+			net.lax1dude.eaglercraft.v1_8.Display.setResolutionScale(parFloat1);
+		}
+
 		if (parOptions == GameSettings.Options.SENSITIVITY) {
 			this.mouseSensitivity = parFloat1;
 		}
@@ -568,6 +617,126 @@ public GameSettings(Minecraft mcIn) {
 			this.mc.renderGlobal.loadRenderers();
 		}
 
+		if (parOptions == GameSettings.Options.OF_WATER_ANIMATED) {
+			this.waterAnimatedOF = !this.waterAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_LAVA_ANIMATED) {
+			this.lavaAnimatedOF = !this.lavaAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_FIRE_ANIMATED) {
+			this.fireAnimatedOF = !this.fireAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_PORTAL_ANIMATED) {
+			this.portalAnimatedOF = !this.portalAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_TERRAIN_ANIMATED) {
+			this.terrainAnimatedOF = !this.terrainAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_TEXTURES_ANIMATED) {
+			this.texturesAnimatedOF = !this.texturesAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_WATER_PARTICLES) {
+			this.waterParticlesOF = !this.waterParticlesOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_RAIN_SPLASH) {
+			this.rainSplashOF = !this.rainSplashOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_PORTAL_PARTICLES) {
+			this.portalParticlesOF = !this.portalParticlesOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_POTION_PARTICLES) {
+			this.potionParticlesOF = !this.potionParticlesOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_VOID_PARTICLES) {
+			this.voidParticlesOF = !this.voidParticlesOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_DRIPPING) {
+			this.drippingOF = !this.drippingOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_FIREWORK_PARTICLES) {
+			this.fireworkParticlesOF = !this.fireworkParticlesOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_REDSTONE_ANIMATED) {
+			this.redstoneAnimatedOF = !this.redstoneAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_EXPLOSION_ANIMATED) {
+			this.explosionAnimatedOF = !this.explosionAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_FLAME_ANIMATED) {
+			this.flameAnimatedOF = !this.flameAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_SMOKE_ANIMATED) {
+			this.smokeAnimatedOF = !this.smokeAnimatedOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_DYNAMIC_FOV) {
+			this.dynamicFovOF = !this.dynamicFovOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_SKY) {
+			this.skyOF = !this.skyOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_STARS) {
+			this.starsOF = !this.starsOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_SUN_MOON) {
+			this.sunMoonOF = !this.sunMoonOF;
+		}
+
+		if (parOptions == GameSettings.Options.OF_HELD_TOOLTIPS) {
+			this.heldItemTooltips = !this.heldItemTooltips;
+		}
+
+		if (parOptions == GameSettings.Options.OF_VIGNETTE) {
+			this.vignetteOF = (this.vignetteOF + parInt1) % 3;
+		}
+
+		if (parOptions == GameSettings.Options.OF_TRANSLUCENT) {
+			this.translucentOF = (this.translucentOF + parInt1) % 3;
+		}
+
+		if (parOptions == GameSettings.Options.OF_DROPPED_ITEMS) {
+			this.droppedItemsOF = (this.droppedItemsOF + parInt1) % 3;
+		}
+
+		if (parOptions == GameSettings.Options.OF_SMOOTH_BIOMES) {
+			this.smoothBiomesOF = !this.smoothBiomesOF;
+			this.mc.renderGlobal.loadRenderers();
+		}
+
+		if (parOptions == GameSettings.Options.OF_SWAMP_COLORS) {
+			this.swampColorsOF = !this.swampColorsOF;
+			this.mc.renderGlobal.loadRenderers();
+		}
+
+		if (parOptions == GameSettings.Options.OF_CLEAR_WATER) {
+			this.clearWaterOF = !this.clearWaterOF;
+			this.mc.renderGlobal.loadRenderers();
+		}
+
+		if (parOptions == GameSettings.Options.OF_CUSTOM_FONTS) {
+			this.customFontsOF = !this.customFontsOF;
+			this.mc.fontRendererObj.reloadOFFont();
+		}
+
 		this.saveOptions();
 	}
 
@@ -593,6 +762,18 @@ public GameSettings(Minecraft mcIn) {
 	}
 
 	public float getOptionFloatValue(GameSettings.Options parOptions) {
+		if (parOptions == GameSettings.Options.OF_CLOUD_HEIGHT) {
+			return this.ofCloudHeight;
+		}
+		if (parOptions == GameSettings.Options.OF_FOG_START) {
+			return this.ofFogStart;
+		}
+		if (parOptions == GameSettings.Options.OF_CHUNK_UPDATES) {
+			return this.ofChunkUpdates;
+		}
+		if (parOptions == GameSettings.Options.OF_RESOLUTION_SCALE) {
+			return this.ofResolutionScale;
+		}
 		return parOptions == GameSettings.Options.FOV ? this.fovSetting
 				: (parOptions == GameSettings.Options.GAMMA ? this.gammaSetting
 						: (parOptions == GameSettings.Options.SATURATION ? this.saturation
@@ -679,6 +860,58 @@ public GameSettings(Minecraft mcIn) {
 			return this.smartLeavesOF;
 		case OF_CUSTOM_ITEMS:
 			return this.customItemsOF;
+		case OF_CUSTOM_FONTS:
+			return this.customFontsOF;
+		case OF_CLEAR_WATER:
+			return this.clearWaterOF;
+		case OF_DYNAMIC_FOV:
+			return this.dynamicFovOF;
+		case OF_SKY:
+			return this.skyOF;
+		case OF_STARS:
+			return this.starsOF;
+		case OF_SUN_MOON:
+			return this.sunMoonOF;
+		case OF_SWAMP_COLORS:
+			return this.swampColorsOF;
+		case OF_SMOOTH_BIOMES:
+			return this.smoothBiomesOF;
+		case OF_HELD_TOOLTIPS:
+			return this.heldItemTooltips;
+		case OF_WATER_ANIMATED:
+			return this.waterAnimatedOF;
+		case OF_LAVA_ANIMATED:
+			return this.lavaAnimatedOF;
+		case OF_FIRE_ANIMATED:
+			return this.fireAnimatedOF;
+		case OF_PORTAL_ANIMATED:
+			return this.portalAnimatedOF;
+		case OF_TERRAIN_ANIMATED:
+			return this.terrainAnimatedOF;
+		case OF_TEXTURES_ANIMATED:
+			return this.texturesAnimatedOF;
+		case OF_WATER_PARTICLES:
+			return this.waterParticlesOF;
+		case OF_RAIN_SPLASH:
+			return this.rainSplashOF;
+		case OF_PORTAL_PARTICLES:
+			return this.portalParticlesOF;
+		case OF_POTION_PARTICLES:
+			return this.potionParticlesOF;
+		case OF_VOID_PARTICLES:
+			return this.voidParticlesOF;
+		case OF_DRIPPING:
+			return this.drippingOF;
+		case OF_FIREWORK_PARTICLES:
+			return this.fireworkParticlesOF;
+		case OF_REDSTONE_ANIMATED:
+			return this.redstoneAnimatedOF;
+		case OF_EXPLOSION_ANIMATED:
+			return this.explosionAnimatedOF;
+		case OF_FLAME_ANIMATED:
+			return this.flameAnimatedOF;
+		case OF_SMOKE_ANIMATED:
+			return this.smokeAnimatedOF;
 		default:
 			return false;
 		}
@@ -702,7 +935,32 @@ public GameSettings(Minecraft mcIn) {
 	 * Gets a key binding.
 	 */
 	public String getKeyBinding(GameSettings.Options parOptions) {
+		if (parOptions.isScreenLink()) {
+			return I18n.format(parOptions.getEnumString(), new Object[0]);
+		}
 		String s = I18n.format(parOptions.getEnumString(), new Object[0]) + ": ";
+		if (parOptions == GameSettings.Options.OF_CLOUD_HEIGHT) {
+			return s + (this.ofCloudHeight <= 0.0F ? "OFF" : Math.round(this.ofCloudHeight * 100.0F) + "%");
+		}
+		if (parOptions == GameSettings.Options.OF_FOG_START) {
+			return s + (Math.round(this.ofFogStart * 10.0F) / 10.0F);
+		}
+		if (parOptions == GameSettings.Options.OF_CHUNK_UPDATES) {
+			int updates = Math.round(this.ofChunkUpdates);
+			return s + (updates >= 5 ? "Unlimited" : String.valueOf(updates));
+		}
+		if (parOptions == GameSettings.Options.OF_RESOLUTION_SCALE) {
+			return s + Math.round(this.ofResolutionScale * 100.0F) + "%";
+		}
+		if (parOptions == GameSettings.Options.OF_VIGNETTE) {
+			return s + new String[] { "Default", "Fast", "Fancy" }[this.vignetteOF];
+		}
+		if (parOptions == GameSettings.Options.OF_DROPPED_ITEMS) {
+			return s + new String[] { "Default", "Fast", "Fancy" }[this.droppedItemsOF];
+		}
+		if (parOptions == GameSettings.Options.OF_TRANSLUCENT) {
+			return s + new String[] { "Default", "Fast", "Fancy" }[this.translucentOF];
+		}
 		if (parOptions.getEnumFloat()) {
 			float f1 = this.getOptionFloatValue(parOptions);
 			float f = parOptions.normalizeValue(f1);
@@ -864,6 +1122,23 @@ public GameSettings(Minecraft mcIn) {
 
 					if (astring[0].equals("gamma")) {
 						this.gammaSetting = this.parseFloat(astring[1]);
+					}
+
+					if (astring[0].equals("ofCloudHeight")) {
+						this.ofCloudHeight = MathHelper.clamp_float(this.parseFloat(astring[1]), 0.0F, 1.0F);
+					}
+
+					if (astring[0].equals("ofFogStart")) {
+						this.ofFogStart = MathHelper.clamp_float(this.parseFloat(astring[1]), 0.2F, 2.5F);
+					}
+
+					if (astring[0].equals("ofChunkUpdates")) {
+						this.ofChunkUpdates = MathHelper.clamp_float(this.parseFloat(astring[1]), 1.0F, 5.0F);
+					}
+
+					if (astring[0].equals("ofResolutionScale")) {
+						this.ofResolutionScale = MathHelper.clamp_float(this.parseFloat(astring[1]), 0.25F, 1.0F);
+						net.lax1dude.eaglercraft.v1_8.Display.setResolutionScale(this.ofResolutionScale);
 					}
 
 					if (astring[0].equals("saturation")) {
@@ -1260,6 +1535,118 @@ public GameSettings(Minecraft mcIn) {
 						customItemsOF = astring[1].equals("true");
 					}
 
+					if (astring[0].equals("customFontsOF")) {
+						customFontsOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("clearWaterOF")) {
+						clearWaterOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("skyOF")) {
+						skyOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("starsOF")) {
+						starsOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("sunMoonOF")) {
+						sunMoonOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("vignetteOF")) {
+						this.vignetteOF = MathHelper.clamp_int(Integer.parseInt(astring[1]), 0, 2);
+					}
+
+					if (astring[0].equals("translucentOF")) {
+						this.translucentOF = MathHelper.clamp_int(Integer.parseInt(astring[1]), 0, 2);
+					}
+
+					if (astring[0].equals("droppedItemsOF")) {
+						this.droppedItemsOF = MathHelper.clamp_int(Integer.parseInt(astring[1]), 0, 2);
+					}
+
+					if (astring[0].equals("smoothBiomesOF")) {
+						smoothBiomesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("swampColorsOF")) {
+						swampColorsOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("dynamicFovOF")) {
+						dynamicFovOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("waterAnimatedOF")) {
+						waterAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("lavaAnimatedOF")) {
+						lavaAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("fireAnimatedOF")) {
+						fireAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("portalAnimatedOF")) {
+						portalAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("terrainAnimatedOF")) {
+						terrainAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("texturesAnimatedOF")) {
+						texturesAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("waterParticlesOF")) {
+						waterParticlesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("rainSplashOF")) {
+						rainSplashOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("portalParticlesOF")) {
+						portalParticlesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("potionParticlesOF")) {
+						potionParticlesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("voidParticlesOF")) {
+						voidParticlesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("drippingOF")) {
+						drippingOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("fireworkParticlesOF")) {
+						fireworkParticlesOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("redstoneAnimatedOF")) {
+						redstoneAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("explosionAnimatedOF")) {
+						explosionAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("flameAnimatedOF")) {
+						flameAnimatedOF = astring[1].equals("true");
+					}
+
+					if (astring[0].equals("smokeAnimatedOF")) {
+						smokeAnimatedOF = astring[1].equals("true");
+					}
+
 					deferredShaderConf.readOption(astring[0], astring[1]);
 				} catch (Exception var8) {
 					logger.warn("Skipping bad option: " + s);
@@ -1301,6 +1688,27 @@ public GameSettings(Minecraft mcIn) {
 	/**+
 	 * Saves the options to the options file.
 	 */
+	public void setAllAnimatedOF(boolean on) {
+		this.waterAnimatedOF = on;
+		this.lavaAnimatedOF = on;
+		this.fireAnimatedOF = on;
+		this.portalAnimatedOF = on;
+		this.terrainAnimatedOF = on;
+		this.texturesAnimatedOF = on;
+		this.waterParticlesOF = on;
+		this.rainSplashOF = on;
+		this.portalParticlesOF = on;
+		this.potionParticlesOF = on;
+		this.voidParticlesOF = on;
+		this.drippingOF = on;
+		this.fireworkParticlesOF = on;
+		this.redstoneAnimatedOF = on;
+		this.explosionAnimatedOF = on;
+		this.flameAnimatedOF = on;
+		this.smokeAnimatedOF = on;
+		this.saveOptions();
+	}
+
 	public void saveOptions() {
 		byte[] data = writeOptions();
 		if (data != null) {
@@ -1322,6 +1730,10 @@ public GameSettings(Minecraft mcIn) {
 			printwriter.println("mouseSensitivity:" + this.mouseSensitivity);
 			printwriter.println("fov:" + (this.fovSetting - 70.0F) / 40.0F);
 			printwriter.println("gamma:" + this.gammaSetting);
+			printwriter.println("ofCloudHeight:" + this.ofCloudHeight);
+			printwriter.println("ofFogStart:" + this.ofFogStart);
+			printwriter.println("ofChunkUpdates:" + this.ofChunkUpdates);
+			printwriter.println("ofResolutionScale:" + this.ofResolutionScale);
 			printwriter.println("saturation:" + this.saturation);
 			printwriter.println("renderDistance:" + this.renderDistanceChunks);
 			printwriter.println("guiScale:" + this.guiScale);
@@ -1416,6 +1828,34 @@ public GameSettings(Minecraft mcIn) {
 			printwriter.println("customSkyOF:" + this.customSkyOF);
 			printwriter.println("smartLeavesOF:" + this.smartLeavesOF);
 			printwriter.println("customItemsOF:" + this.customItemsOF);
+			printwriter.println("customFontsOF:" + this.customFontsOF);
+			printwriter.println("clearWaterOF:" + this.clearWaterOF);
+			printwriter.println("dynamicFovOF:" + this.dynamicFovOF);
+			printwriter.println("skyOF:" + this.skyOF);
+			printwriter.println("starsOF:" + this.starsOF);
+			printwriter.println("sunMoonOF:" + this.sunMoonOF);
+			printwriter.println("swampColorsOF:" + this.swampColorsOF);
+			printwriter.println("smoothBiomesOF:" + this.smoothBiomesOF);
+			printwriter.println("vignetteOF:" + this.vignetteOF);
+			printwriter.println("droppedItemsOF:" + this.droppedItemsOF);
+			printwriter.println("translucentOF:" + this.translucentOF);
+			printwriter.println("waterAnimatedOF:" + this.waterAnimatedOF);
+			printwriter.println("lavaAnimatedOF:" + this.lavaAnimatedOF);
+			printwriter.println("fireAnimatedOF:" + this.fireAnimatedOF);
+			printwriter.println("portalAnimatedOF:" + this.portalAnimatedOF);
+			printwriter.println("terrainAnimatedOF:" + this.terrainAnimatedOF);
+			printwriter.println("texturesAnimatedOF:" + this.texturesAnimatedOF);
+			printwriter.println("waterParticlesOF:" + this.waterParticlesOF);
+			printwriter.println("rainSplashOF:" + this.rainSplashOF);
+			printwriter.println("portalParticlesOF:" + this.portalParticlesOF);
+			printwriter.println("potionParticlesOF:" + this.potionParticlesOF);
+			printwriter.println("voidParticlesOF:" + this.voidParticlesOF);
+			printwriter.println("drippingOF:" + this.drippingOF);
+			printwriter.println("fireworkParticlesOF:" + this.fireworkParticlesOF);
+			printwriter.println("redstoneAnimatedOF:" + this.redstoneAnimatedOF);
+			printwriter.println("explosionAnimatedOF:" + this.explosionAnimatedOF);
+			printwriter.println("flameAnimatedOF:" + this.flameAnimatedOF);
+			printwriter.println("smokeAnimatedOF:" + this.smokeAnimatedOF);
 
 			for (KeyBinding keybinding : this.keyBindings) {
 				printwriter.println("key_" + keybinding.getKeyDescription() + ":" + keybinding.getKeyCode());
@@ -1498,6 +1938,15 @@ public GameSettings(Minecraft mcIn) {
 		this.sendSettingsToServer();
 	}
 
+	/** Slider is inverted: 2.5 = foggiest (start 0.2x far plane), 0.2 = least fog (start 2.5x far plane). */
+	public float getFogStartFactorOF() {
+		return 2.7F - this.ofFogStart;
+	}
+
+	public float getCloudYOF() {
+		return 128.0F + this.ofCloudHeight * 128.0F;
+	}
+
 	public int func_181147_e() {
 		return this.renderDistanceChunks >= 4 ? this.clouds : 0;
 	}
@@ -1574,7 +2023,43 @@ public GameSettings(Minecraft mcIn) {
 		EAGLER_TOUCH_CONTROL_OPACITY("options.touchControlOpacity", true, false),
 		OF_CONNECTED_TEXTURES("options.connectedTexturesOF", false, false),
 		OF_BETTER_GRASS("options.betterGrassOF", false, false), OF_CUSTOM_SKIES("options.customSkiesOF", false, true),
-		OF_SMART_LEAVES("options.smartLeavesOF", false, true), OF_CUSTOM_ITEMS("options.customItemsOF", false, true);
+		OF_SMART_LEAVES("options.smartLeavesOF", false, true), OF_CUSTOM_ITEMS("options.customItemsOF", false, true),
+		OF_QUALITY("of.button.quality", false, false), OF_DETAILS("of.button.detail", false, false),
+		OF_ANIMATIONS("of.button.animation", false, false), OF_OTHER("of.button.other", false, false),
+		OF_PERFORMANCE("of.button.performance", false, false),
+		OF_CUSTOM_FONTS("of.quality.customFonts", false, true),
+		OF_CLEAR_WATER("of.quality.clearWater", false, true),
+		OF_DYNAMIC_FOV("of.other.dynamicFov", false, true),
+		OF_WATER_ANIMATED("of.animation.water", false, true),
+		OF_LAVA_ANIMATED("of.animation.lava", false, true),
+		OF_FIRE_ANIMATED("of.animation.fire", false, true),
+		OF_PORTAL_ANIMATED("of.animation.portal", false, true),
+		OF_TERRAIN_ANIMATED("of.animation.terrain", false, true),
+		OF_TEXTURES_ANIMATED("of.animation.textures", false, true),
+		OF_WATER_PARTICLES("of.animation.waterParticles", false, true),
+		OF_RAIN_SPLASH("of.animation.rainSplash", false, true),
+		OF_PORTAL_PARTICLES("of.animation.portalParticles", false, true),
+		OF_POTION_PARTICLES("of.animation.potionParticles", false, true),
+		OF_VOID_PARTICLES("of.animation.voidParticles", false, true),
+		OF_DRIPPING("of.animation.dripping", false, true),
+		OF_FIREWORK_PARTICLES("of.animation.fireworkParticles", false, true),
+		OF_REDSTONE_ANIMATED("of.animation.redstone", false, true),
+		OF_EXPLOSION_ANIMATED("of.animation.explosion", false, true),
+		OF_FLAME_ANIMATED("of.animation.flame", false, true),
+		OF_SMOKE_ANIMATED("of.animation.smoke", false, true),
+		OF_CLOUD_HEIGHT("of.detail.cloudHeight", true, false, 0.0F, 1.0F, 0.05F),
+		OF_FOG_START("of.detail.fogStart", true, false, 0.2F, 2.5F, 0.1F),
+		OF_CHUNK_UPDATES("of.performance.chunkUpdates", true, false, 1.0F, 5.0F, 1.0F),
+		OF_RESOLUTION_SCALE("of.performance.resolutionScale", true, false, 0.25F, 1.0F, 0.25F),
+		OF_SKY("of.detail.sky", false, true),
+		OF_STARS("of.detail.stars", false, true),
+		OF_SUN_MOON("of.detail.sunMoon", false, true),
+		OF_SWAMP_COLORS("of.detail.swampColors", false, true),
+		OF_SMOOTH_BIOMES("of.detail.smoothBiomes", false, true),
+		OF_HELD_TOOLTIPS("of.detail.heldTooltips", false, true),
+		OF_VIGNETTE("of.detail.vignette", false, false),
+		OF_DROPPED_ITEMS("of.detail.droppedItems", false, false),
+		OF_TRANSLUCENT("of.detail.translucent", false, false);
 
 		private final boolean enumFloat;
 		private final boolean enumBoolean;
@@ -1621,6 +2106,11 @@ public GameSettings(Minecraft mcIn) {
 
 		public String getEnumString() {
 			return this.enumString;
+		}
+
+		public boolean isScreenLink() {
+			return this == OF_QUALITY || this == OF_DETAILS || this == OF_ANIMATIONS || this == OF_OTHER
+					|| this == OF_PERFORMANCE;
 		}
 
 		public float getValueMax() {

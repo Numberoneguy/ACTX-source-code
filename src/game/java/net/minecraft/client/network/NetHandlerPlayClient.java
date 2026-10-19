@@ -52,6 +52,7 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.gui.IProgressMeter;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
+import net.minecraft.client.gui.inventory.GuiShulkerBox;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
@@ -257,6 +258,9 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	public int currentServerMaxPlayers = 20;
 	private boolean field_147308_k = false;
 	private boolean isIntegratedServer = false;
+	// fix for totem not popping up in a server dont remove.
+	private int lastTotemPopEntity = -1;
+	private long lastTotemPopTime = -100L;
 	/**+
 	 * Just an ordinary random number generator, used to randomize
 	 * audio pitch of item/orb pickup and randomize both
@@ -343,6 +347,7 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	}
 
 	public void handleJoinGame(S01PacketJoinGame packetIn) {
+		net.minecraft.actx.server.actxviablocks.clear();
 		this.gameController.playerController = new PlayerControllerMP(this.gameController, this);
 		this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false,
 				packetIn.isHardcoreMode(), packetIn.getWorldType()), packetIn.getDimension(), packetIn.getDifficulty());
@@ -580,6 +585,14 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		Entity entity = this.clientWorldController.getEntityByID(packetIn.getEntityId());
 		if (entity != null && packetIn.func_149376_c() != null) {
 			entity.getDataWatcher().updateWatchedObjectsFromList(packetIn.func_149376_c());
+			if (entity instanceof net.minecraft.entity.item.EntityItem) {
+				net.minecraft.entity.item.EntityItem dropped = (net.minecraft.entity.item.EntityItem) entity;
+				ItemStack droppedStack = dropped.getEntityItem();
+				ItemStack restoredDrop = net.minecraft.actx.server.actxcompat.restoreStack(droppedStack);
+				if (restoredDrop != droppedStack) {
+					dropped.setEntityItemStack(restoredDrop);
+				}
+			}
 		}
 	}
 
@@ -769,7 +782,8 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		for (int i = 0; i < dat.length; ++i) {
 			BlockUpdateData s22packetmultiblockchange$blockupdatedata = dat[i];
 			this.clientWorldController.invalidateRegionAndSetBlock(s22packetmultiblockchange$blockupdatedata.getPos(),
-					s22packetmultiblockchange$blockupdatedata.getBlockState());
+					net.minecraft.actx.server.actxviablocks.override(s22packetmultiblockchange$blockupdatedata.getPos(),
+							s22packetmultiblockchange$blockupdatedata.getBlockState()));
 		}
 
 	}
@@ -792,6 +806,7 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 				(packetIn.getChunkX() << 4) + 15, 256, (packetIn.getChunkZ() << 4) + 15);
 		Chunk chunk = this.clientWorldController.getChunkFromChunkCoords(packetIn.getChunkX(), packetIn.getChunkZ());
 		chunk.fillChunk(packetIn.func_149272_d(), packetIn.getExtractedSize(), packetIn.func_149274_i());
+		net.minecraft.actx.server.actxviablocks.applyToChunk(chunk);
 		this.clientWorldController.markBlockRangeForRenderUpdate(packetIn.getChunkX() << 4, 0,
 				packetIn.getChunkZ() << 4, (packetIn.getChunkX() << 4) + 15, 256, (packetIn.getChunkZ() << 4) + 15);
 		if (!packetIn.func_149274_i() || !(this.clientWorldController.provider instanceof WorldProviderSurface)) {
@@ -805,7 +820,8 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	 * (and notify the clients)
 	 */
 	public void handleBlockChange(S23PacketBlockChange packetIn) {
-		this.clientWorldController.invalidateRegionAndSetBlock(packetIn.getBlockPosition(), packetIn.getBlockState());
+		this.clientWorldController.invalidateRegionAndSetBlock(packetIn.getBlockPosition(),
+				net.minecraft.actx.server.actxviablocks.override(packetIn.getBlockPosition(), packetIn.getBlockState()));
 	}
 
 	/**+
@@ -838,6 +854,25 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	public void addToSendQueue(Packet parPacket) {
 		this.netManager.sendPacket(parPacket);
 	}
+	// fix for the totem not popping up
+	private void playTotemPop(Entity entity) {
+		long now = this.clientWorldController.getTotalWorldTime();
+		if (entity.getEntityId() == this.lastTotemPopEntity && now - this.lastTotemPopTime < 20L) {
+			return;
+		}
+
+		this.lastTotemPopEntity = entity.getEntityId();
+		this.lastTotemPopTime = now;
+		this.gameController.effectRenderer.emitParticleAtEntity(entity, EnumParticleTypes.TOTEM, 30);
+		this.clientWorldController.playSound(entity.posX, entity.posY, entity.posZ, "item.totem.use", 1.0F, 1.0F,
+				false);
+		if (entity == this.gameController.thePlayer) {
+			Item totemItem = Item.getByNameOrId("totem");
+			if (totemItem != null) {
+				this.gameController.entityRenderer.displayItemActivation(new ItemStack(totemItem));
+			}
+		}
+	}
 
 	public void handleCollectItem(S0DPacketCollectItem packetIn) {
 		Entity entity = this.clientWorldController.getEntityByID(packetIn.getCollectedItemEntityID());
@@ -866,6 +901,9 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	 * Prints a chatmessage in the chat GUI
 	 */
 	public void handleChat(S02PacketChat packetIn) {
+        if (packetIn.getType() == 2 && net.minecraft.actx.server.actxcooldown.suppressVia(packetIn.getChatComponent().getUnformattedText())) {
+            return;
+        }
         if (packetIn.getType() == 2) {
             this.gameController.ingameGUI.setRecordPlaying(packetIn.getChatComponent(), false);
         } else {
@@ -1015,6 +1053,8 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		if (entity != null) {
 			if (packetIn.getOpCode() == 21) {
 				this.gameController.getSoundHandler().playSound(new GuardianSound((EntityGuardian) entity));
+			} else if (packetIn.getOpCode() == 35) {
+				this.playTotemPop(entity);
 			} else {
 				entity.handleStatusUpdate(packetIn.getOpCode());
 			}
@@ -1036,6 +1076,7 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	public void handleRespawn(S07PacketRespawn packetIn) {
 		if (packetIn.getDimensionID() != this.gameController.thePlayer.dimension) {
 			this.doneLoadingTerrain = false;
+			net.minecraft.actx.server.actxviablocks.clear();
 			Scoreboard scoreboard = this.clientWorldController.getScoreboard();
 			this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false,
 					this.gameController.theWorld.getWorldInfo().isHardcoreModeEnabled(), packetIn.getWorldType()),
@@ -1074,6 +1115,10 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		if ("minecraft:container".equals(packetIn.getGuiId())) {
 			entityplayersp.displayGUIChest(new InventoryBasic(packetIn.getWindowTitle(), packetIn.getSlotCount()));
 			entityplayersp.openContainer.windowId = packetIn.getWindowId();
+		} else if ("minecraft:shulker_box".equals(packetIn.getGuiId())) {
+			this.gameController.displayGuiScreen(new GuiShulkerBox(entityplayersp.inventory,
+					new InventoryBasic(packetIn.getWindowTitle(), packetIn.getSlotCount())));
+			entityplayersp.openContainer.windowId = packetIn.getWindowId();
 		} else if ("minecraft:villager".equals(packetIn.getGuiId())) {
 			entityplayersp.displayVillagerTradeGui(new NpcMerchant(entityplayersp, packetIn.getWindowTitle()));
 			entityplayersp.openContainer.windowId = packetIn.getWindowId();
@@ -1101,9 +1146,10 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	 * inventory or an open (non-creative) container
 	 */
 	public void handleSetSlot(S2FPacketSetSlot packetIn) {
+		ItemStack restoredStack = net.minecraft.actx.server.actxcompat.restoreStack(packetIn.func_149174_e());
 		EntityPlayerSP entityplayersp = this.gameController.thePlayer;
 		if (packetIn.func_149175_c() == -1) {
-			entityplayersp.inventory.setItemStack(packetIn.func_149174_e());
+			entityplayersp.inventory.setItemStack(restoredStack);
 		} else {
 			boolean flag = false;
 			if (this.gameController.currentScreen instanceof GuiContainerCreative) {
@@ -1113,18 +1159,20 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 
 			if (packetIn.func_149175_c() == 0 && packetIn.func_149173_d() >= 36 && packetIn.func_149173_d() < 45) {
 				ItemStack itemstack = entityplayersp.inventoryContainer.getSlot(packetIn.func_149173_d()).getStack();
-				if (packetIn.func_149174_e() != null
-						&& (itemstack == null || itemstack.stackSize < packetIn.func_149174_e().stackSize)) {
-					packetIn.func_149174_e().animationsToGo = 5;
+				if (restoredStack != null
+						&& (itemstack == null || itemstack.stackSize < restoredStack.stackSize)) {
+					restoredStack.animationsToGo = 5;
 				}
 
-				entityplayersp.inventoryContainer.putStackInSlot(packetIn.func_149173_d(), packetIn.func_149174_e());
+				entityplayersp.inventoryContainer.putStackInSlot(packetIn.func_149173_d(), restoredStack);
 			} else if (packetIn.func_149175_c() == entityplayersp.openContainer.windowId
 					&& (packetIn.func_149175_c() != 0 || !flag)) {
-				entityplayersp.openContainer.putStackInSlot(packetIn.func_149173_d(), packetIn.func_149174_e());
+				entityplayersp.openContainer.putStackInSlot(packetIn.func_149173_d(), restoredStack);
 			}
 		}
 
+		net.minecraft.actx.server.actxviaitemfix.cleanArmor(entityplayersp,
+				"set slot window=" + packetIn.func_149175_c() + " slot=" + packetIn.func_149173_d());
 	}
 
 	/**+
@@ -1155,11 +1203,13 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	public void handleWindowItems(S30PacketWindowItems packetIn) {
 		EntityPlayerSP entityplayersp = this.gameController.thePlayer;
 		if (packetIn.func_148911_c() == 0) {
-			entityplayersp.inventoryContainer.putStacksInSlots(packetIn.getItemStacks());
+			entityplayersp.inventoryContainer.putStacksInSlots(net.minecraft.actx.server.actxcompat.restoreStacks(packetIn.getItemStacks()));
 		} else if (packetIn.func_148911_c() == entityplayersp.openContainer.windowId) {
-			entityplayersp.openContainer.putStacksInSlots(packetIn.getItemStacks());
+			entityplayersp.openContainer.putStacksInSlots(net.minecraft.actx.server.actxcompat.restoreStacks(packetIn.getItemStacks()));
 		}
 
+		net.minecraft.actx.server.actxviaitemfix.cleanArmor(entityplayersp,
+				"window items window=" + packetIn.func_148911_c());
 	}
 
 	/**+
@@ -1238,8 +1288,14 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 
 	public void handleEntityEquipment(S04PacketEntityEquipment packetIn) {
 		Entity entity = this.clientWorldController.getEntityByID(packetIn.getEntityID());
-		if (entity != null) {
-			entity.setCurrentItemOrArmor(packetIn.getEquipmentSlot(), packetIn.getItemStack());
+		// Newer servers (through Via) also send you your own equipment. EntityPlayerSP reads the slot
+		// as an armor index (0 = boots), but the packet uses 1 = boots .. 4 = helmet, so a chestplate
+		// (slot 3) lands in the helmet slot. Your own armor is already synced by the window packets.
+		if (entity != null && entity != this.gameController.thePlayer) {
+			entity.setCurrentItemOrArmor(packetIn.getEquipmentSlot(), net.minecraft.actx.server.actxcompat.restoreStack(packetIn.getItemStack()));
+		} else if (entity != null
+				&& net.minecraft.actx.server.actxviaitemfix.isElytra(packetIn.getItemStack())) {
+			logger.info("own equipment packet ignored: slot={}", packetIn.getEquipmentSlot());
 		}
 
 	}
@@ -1282,6 +1338,7 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 					(k << 4) + 15);
 			Chunk chunk = this.clientWorldController.getChunkFromChunkCoords(j, k);
 			chunk.fillChunk(packetIn.getChunkBytes(i), packetIn.getChunkSize(i), true);
+			net.minecraft.actx.server.actxviablocks.applyToChunk(chunk);
 			this.clientWorldController.markBlockRangeForRenderUpdate(j << 4, 0, k << 4, (j << 4) + 15, 256,
 					(k << 4) + 15);
 			if (!(this.clientWorldController.provider instanceof WorldProviderSurface)) {
@@ -1325,10 +1382,17 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 		} else if (i == 8) {
 			this.clientWorldController.setThunderStrength(f);
 		} else if (i == 10) {
-			this.clientWorldController.spawnParticle(EnumParticleTypes.MOB_APPEARANCE, entityplayersp.posX,
-					entityplayersp.posY, entityplayersp.posZ, 0.0D, 0.0D, 0.0D, new int[0]);
-			this.clientWorldController.playSound(entityplayersp.posX, entityplayersp.posY, entityplayersp.posZ,
-					"mob.guardian.curse", 1.0F, 1.0F, false);
+			PotionEffect totemAbsorption = entityplayersp
+					.getActivePotionEffect(net.minecraft.potion.Potion.absorption);
+			if (totemAbsorption != null && totemAbsorption.getAmplifier() == 1 && totemAbsorption.getDuration() >= 90
+					&& totemAbsorption.getDuration() <= 100) {
+				this.playTotemPop(entityplayersp);
+			} else {
+				this.clientWorldController.spawnParticle(EnumParticleTypes.MOB_APPEARANCE, entityplayersp.posX,
+						entityplayersp.posY, entityplayersp.posZ, 0.0D, 0.0D, 0.0D, new int[0]);
+				this.clientWorldController.playSound(entityplayersp.posX, entityplayersp.posY, entityplayersp.posZ,
+						"mob.guardian.curse", 1.0F, 1.0F, false);
+			}
 		}
 
 	}
@@ -1400,6 +1464,13 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 			potioneffect.setPotionDurationMax(packetIn.func_149429_c());
 			((EntityLivingBase) entity).addPotionEffect(potioneffect);
 		}
+		// totem effects and amplifier
+		if (entity != null && packetIn.getEffectId() == 22 && packetIn.getAmplifier() == 1
+				&& packetIn.getDuration() == 100) {
+			this.playTotemPop(entity);
+		}
+		// logging to see if the totem pops with effects and its id great.
+		logger.info("effect id={} amp={} dur={}", packetIn.getEffectId(), packetIn.getAmplifier(), packetIn.getDuration());
 	}
 
 	public void handleCombatEvent(S42PacketCombatEvent packetIn) {
@@ -1427,6 +1498,11 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient {
 	}
 
 	public void handleTitle(S45PacketTitle packetIn) {
+		if (net.minecraft.actx.server.actxcooldown.suppressViaTitle(packetIn.getType().name(),
+				packetIn.getMessage() != null ? packetIn.getMessage().getUnformattedText() : null,
+				packetIn.getFadeInTime(), packetIn.getDisplayTime(), packetIn.getFadeOutTime())) {
+			return;
+		}
 		S45PacketTitle.Type s45packettitle$type = packetIn.getType();
 		String s = null;
 		String s1 = null;

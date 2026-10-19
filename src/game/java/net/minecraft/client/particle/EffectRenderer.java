@@ -138,6 +138,7 @@ public class EffectRenderer {
 		this.registerParticle(EnumParticleTypes.EXPLOSION_LARGE.getParticleID(), new EntityLargeExplodeFX.Factory());
 		this.registerParticle(EnumParticleTypes.FIREWORKS_SPARK.getParticleID(), new EntityFirework.Factory());
 		this.registerParticle(EnumParticleTypes.MOB_APPEARANCE.getParticleID(), new MobAppearance.Factory());
+		this.registerParticle(EnumParticleTypes.TOTEM.getParticleID(), new EntityTotemFX.Factory());
 	}
 
 	public void registerParticle(int id, IParticleFactory particleFactory) {
@@ -148,6 +149,10 @@ public class EffectRenderer {
 		this.particleEmitters.add(new EntityParticleEmitter(this.worldObj, entityIn, particleTypes));
 	}
 
+	public void emitParticleAtEntity(Entity entityIn, EnumParticleTypes particleTypes, int lifetime) {
+		this.particleEmitters.add(new EntityParticleEmitter(this.worldObj, entityIn, particleTypes, lifetime));
+	}
+
 	/**+
 	 * Spawns the relevant particle according to the particle id.
 	 */
@@ -156,6 +161,10 @@ public class EffectRenderer {
 		
 		// Check if particles are set to NONE (3)
 		if (net.minecraft.client.Minecraft.getMinecraft().gameSettings.particleSetting == 3) {
+			return null;
+		}
+
+		if (!isParticleTypeEnabled(net.minecraft.client.Minecraft.getMinecraft().gameSettings, particleId)) {
 			return null;
 		}
 
@@ -172,8 +181,55 @@ public class EffectRenderer {
 		return null;
 	}
 
+	private static boolean isParticleTypeEnabled(net.minecraft.client.settings.GameSettings gs, int particleId) {
+		EnumParticleTypes type = EnumParticleTypes.getParticleFromId(particleId);
+		if (type == null) {
+			return true;
+		}
+		switch (type) {
+		case WATER_BUBBLE:
+		case WATER_SPLASH:
+		case WATER_WAKE:
+		case SUSPENDED:
+			return gs.waterParticlesOF;
+		case WATER_DROP:
+			return gs.rainSplashOF;
+		case PORTAL:
+			return gs.portalParticlesOF;
+		case SPELL:
+		case SPELL_INSTANT:
+		case SPELL_MOB:
+		case SPELL_MOB_AMBIENT:
+		case SPELL_WITCH:
+			return gs.potionParticlesOF;
+		case SUSPENDED_DEPTH:
+			return gs.voidParticlesOF;
+		case DRIP_WATER:
+		case DRIP_LAVA:
+			return gs.drippingOF;
+		case REDSTONE:
+			return gs.redstoneAnimatedOF;
+		case EXPLOSION_NORMAL:
+		case EXPLOSION_LARGE:
+		case EXPLOSION_HUGE:
+			return gs.explosionAnimatedOF;
+		case FLAME:
+			return gs.flameAnimatedOF;
+		case SMOKE_NORMAL:
+		case SMOKE_LARGE:
+			return gs.smokeAnimatedOF;
+		default:
+			return true;
+		}
+	}
+
 	public void addEffect(EntityFX effect) {
-		int particleSetting = net.minecraft.client.Minecraft.getMinecraft().gameSettings.particleSetting;
+		net.minecraft.client.settings.GameSettings ofSettings = net.minecraft.client.Minecraft.getMinecraft().gameSettings;
+		if (!ofSettings.fireworkParticlesOF && (effect instanceof EntityFirework.SparkFX
+				|| effect instanceof EntityFirework.OverlayFX || effect instanceof EntityFirework.StarterFX)) {
+			return;
+		}
+		int particleSetting = ofSettings.particleSetting;
 
 		// Centralized here (not just in spawnEffectParticle) because
 		// addBlockDestroyEffects/addBlockHitEffects call this directly,

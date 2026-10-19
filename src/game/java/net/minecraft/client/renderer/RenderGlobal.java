@@ -1494,6 +1494,8 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
 		this.displayListEntitiesDirty |= this.renderDispatcher.updateChunks(finishTimeNano);
 		if (!this.chunksToUpdate.isEmpty()) {
 			Iterator iterator = this.chunksToUpdate.iterator();
+			int maxUpdates = Math.round(this.mc.gameSettings.ofChunkUpdates);
+			int queued = 0;
 
 			while (iterator.hasNext()) {
 				RenderChunk renderchunk = (RenderChunk) iterator.next();
@@ -1503,6 +1505,10 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
 
 				renderchunk.setNeedsUpdate(false);
 				iterator.remove();
+				++queued;
+				if (maxUpdates < 5 && queued >= maxUpdates) {
+					break;
+				}
 				long i = finishTimeNano - EagRuntime.nanoTime();
 				if (i < 0L) {
 					break;

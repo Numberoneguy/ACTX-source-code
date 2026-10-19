@@ -5,14 +5,17 @@ import net.lax1dude.eaglercraft.v1_8.EaglercraftUUID;
 import net.lax1dude.eaglercraft.v1_8.mojang.authlib.GameProfile;
 import net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockShulkerBox;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntityBanner;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityEnderChest;
+import net.minecraft.tileentity.TileEntityShulkerBox;
 import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.EnumFacing;
 
@@ -43,6 +46,13 @@ public class TileEntityItemStackRenderer {
 	private TileEntityEnderChest enderChest = new TileEntityEnderChest();
 	private TileEntityBanner banner = new TileEntityBanner();
 	private TileEntitySkull skull = new TileEntitySkull();
+	private final TileEntityShulkerBox[] shulkerBoxes = new TileEntityShulkerBox[16];
+
+	{
+		for (int i = 0; i < 16; ++i) {
+			this.shulkerBoxes[i] = new TileEntityShulkerBox(EnumDyeColor.byMetadata(i));
+		}
+	}
 
 	public void renderByItem(ItemStack itemStackIn) {
 		if (itemStackIn.getItem() == Items.banner) {
@@ -75,7 +85,10 @@ public class TileEntityItemStackRenderer {
 			}
 		} else {
 			Block block = Block.getBlockFromItem(itemStackIn.getItem());
-			if (block == Blocks.ender_chest) {
+			if (block instanceof BlockShulkerBox) {
+				TileEntityRendererDispatcher.instance.renderTileEntityAt(
+						this.shulkerBoxes[((BlockShulkerBox) block).getColor().getMetadata()], 0.0D, 0.0D, 0.0D, 0.0F);
+			} else if (block == Blocks.ender_chest) {
 				TileEntityRendererDispatcher.instance.renderTileEntityAt(this.enderChest, 0.0D, 0.0D, 0.0D, 0.0F);
 			} else if (block == Blocks.trapped_chest) {
 				TileEntityRendererDispatcher.instance.renderTileEntityAt(this.field_147718_c, 0.0D, 0.0D, 0.0D, 0.0F);

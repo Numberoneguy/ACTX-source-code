@@ -5,6 +5,8 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 
 /**+
@@ -39,6 +41,7 @@ public class LayerCape implements LayerRenderer<AbstractClientPlayer> {
 		if (abstractclientplayer.hasPlayerInfo() && !abstractclientplayer.isInvisible()
 				&& abstractclientplayer.isWearing(EnumPlayerModelParts.CAPE)
 				&& abstractclientplayer.getLocationCape() != null
+				&& !isWearingElytra(abstractclientplayer)
 				&& this.playerRenderer.getMainModel() instanceof ModelPlayer) {
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.playerRenderer.bindTexture(abstractclientplayer.getLocationCape());
@@ -85,6 +88,11 @@ public class LayerCape implements LayerRenderer<AbstractClientPlayer> {
 			((ModelPlayer) this.playerRenderer.getMainModel()).renderCape(0.0625F);
 			GlStateManager.popMatrix();
 		}
+	}
+
+	private static boolean isWearingElytra(AbstractClientPlayer player) {
+		ItemStack chest = player.getEquipmentInSlot(3);
+		return chest != null && chest.getItem() == Items.elytra;
 	}
 
 	public boolean shouldCombineTextures() {

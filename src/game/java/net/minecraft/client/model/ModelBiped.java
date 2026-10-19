@@ -2,6 +2,7 @@ package net.minecraft.client.model;
 
 import net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
 
 /**+
@@ -120,14 +121,31 @@ public class ModelBiped extends ModelBase {
 	 * legs can swing at most.
 	 */
 	public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float var6, Entity var7) {
+		boolean gliding = var7 instanceof EntityLivingBase && ((EntityLivingBase) var7).getTicksElytraFlying() > 4;
 		this.bipedHead.rotateAngleY = f3 / 57.295776F;
-		this.bipedHead.rotateAngleX = f4 / 57.295776F;
-		this.bipedRightArm.rotateAngleX = MathHelper.cos(f * 0.6662F + 3.1415927F) * 2.0F * f1 * 0.5F;
-		this.bipedLeftArm.rotateAngleX = MathHelper.cos(f * 0.6662F) * 2.0F * f1 * 0.5F;
+		if (gliding) {
+			this.bipedHead.rotateAngleX = -0.7853982F;
+		} else {
+			this.bipedHead.rotateAngleX = f4 / 57.295776F;
+		}
+
+		float damp = 1.0F;
+		if (gliding) {
+			damp = (float) (var7.motionX * var7.motionX + var7.motionY * var7.motionY + var7.motionZ * var7.motionZ);
+			damp = damp / 0.2F;
+			damp = damp * damp * damp;
+		}
+
+		if (damp < 1.0F) {
+			damp = 1.0F;
+		}
+
+		this.bipedRightArm.rotateAngleX = MathHelper.cos(f * 0.6662F + 3.1415927F) * 2.0F * f1 * 0.5F / damp;
+		this.bipedLeftArm.rotateAngleX = MathHelper.cos(f * 0.6662F) * 2.0F * f1 * 0.5F / damp;
 		this.bipedRightArm.rotateAngleZ = 0.0F;
 		this.bipedLeftArm.rotateAngleZ = 0.0F;
-		this.bipedRightLeg.rotateAngleX = MathHelper.cos(f * 0.6662F) * 1.4F * f1;
-		this.bipedLeftLeg.rotateAngleX = MathHelper.cos(f * 0.6662F + 3.1415927F) * 1.4F * f1;
+		this.bipedRightLeg.rotateAngleX = MathHelper.cos(f * 0.6662F) * 1.4F * f1 / damp;
+		this.bipedLeftLeg.rotateAngleX = MathHelper.cos(f * 0.6662F + 3.1415927F) * 1.4F * f1 / damp;
 		this.bipedRightLeg.rotateAngleY = 0.0F;
 		this.bipedLeftLeg.rotateAngleY = 0.0F;
 		if (this.isRiding) {

@@ -6,6 +6,11 @@ import com.google.common.collect.Lists;
 
 import net.lax1dude.eaglercraft.v1_8.PointerInputAbstraction;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.optifine.GuiOFAnimationSettings;
+import net.minecraft.client.gui.optifine.GuiOFDetailSettings;
+import net.minecraft.client.gui.optifine.GuiOFOtherSettings;
+import net.minecraft.client.gui.optifine.GuiOFPerformanceSettings;
+import net.minecraft.client.gui.optifine.GuiOFQualitySettings;
 import net.minecraft.client.settings.GameSettings;
 
 /**+
@@ -135,6 +140,11 @@ public class GuiOptionsRowList extends GuiListExtended {
 			GuiOptionButton optionButton = (GuiOptionButton) button;
 			GameSettings.Options option = optionButton.returnEnumOptions();
 
+			if (option.isScreenLink()) {
+				this.openScreenLink(option);
+				return;
+			}
+
 			if (option == GameSettings.Options.RENDER_COLORS) {
 				if (optionButton.isDoubleClick()) {
 					this.field_148325_a.gameSettings.toggleCustomColorMode();
@@ -147,6 +157,23 @@ public class GuiOptionsRowList extends GuiListExtended {
 
 			button.displayString = this.field_148325_a.gameSettings
 					.getKeyBinding(GameSettings.Options.getEnumOptions(button.id));
+		}
+
+		private void openScreenLink(GameSettings.Options option) {
+			GuiScreen parent = this.field_148325_a.currentScreen;
+			GuiScreen next;
+			if (option == GameSettings.Options.OF_QUALITY) {
+				next = new GuiOFQualitySettings(parent);
+			} else if (option == GameSettings.Options.OF_DETAILS) {
+				next = new GuiOFDetailSettings(parent);
+			} else if (option == GameSettings.Options.OF_ANIMATIONS) {
+				next = new GuiOFAnimationSettings(parent);
+			} else if (option == GameSettings.Options.OF_PERFORMANCE) {
+				next = new GuiOFPerformanceSettings(parent);
+			} else {
+				next = new GuiOFOtherSettings(parent);
+			}
+			this.field_148325_a.displayGuiScreen(next);
 		}
 
 		public void mouseReleased(int var1, int i, int j, int var4, int var5, int var6) {

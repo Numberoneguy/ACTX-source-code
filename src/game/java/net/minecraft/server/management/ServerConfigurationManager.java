@@ -135,7 +135,8 @@ public abstract class ServerConfigurationManager {
 		playerIn.setWorld(this.mcServer.worldServerForDimension(playerIn.dimension));
 		playerIn.theItemInWorldManager.setWorld((WorldServer) playerIn.worldObj);
 		String s1 = "channel:" + netManager.playerChannel;
-
+		
+		logger.info("Brand UUID for {}: {}", playerIn.getName(), clientBrandUUID);
 		logger.info(playerIn.getName() + "[" + s1 + "] logged in with entity id " + playerIn.getEntityId() + " at ("
 				+ playerIn.posX + ", " + playerIn.posY + ", " + playerIn.posZ + ")");
 		WorldServer worldserver = this.mcServer.worldServerForDimension(playerIn.dimension);
@@ -682,6 +683,45 @@ public abstract class ServerConfigurationManager {
 
         return result;
     }
+
+	/**
+	 * Resolves the same %placeholders% as the tab list / boss bar inside a chat component, so /title and
+	 * /title subtitle can use them. Returns a resolved copy; the original is not modified. Text styling
+	 * (colours, bold, click/hover events) is kept.
+	 */
+	public IChatComponent resolveComponentPlaceholders(IChatComponent component, EntityPlayerMP viewer) {
+		if (component == null) {
+			return null;
+		}
+		return resolveComponentNode(component.createCopy(), viewer);
+	}
+
+	private IChatComponent resolveComponentNode(IChatComponent node, EntityPlayerMP viewer) {
+		IChatComponent out = node;
+		if (node instanceof ChatComponentText) {
+			String raw = ((ChatComponentText) node).getChatComponentText_TextValue();
+			if (raw != null && raw.indexOf('%') >= 0) {
+				String resolved = resolveTabPlaceholders(raw, viewer);
+				if (resolved != null && !resolved.equals(raw)) {
+					out = new ChatComponentText(resolved);
+					out.setChatStyle(node.getChatStyle().createShallowCopy());
+					for (Object sibling : node.getSiblings()) {
+						out.appendSibling((IChatComponent) sibling);
+					}
+				}
+			}
+		}
+		java.util.List siblings = out.getSiblings();
+		for (int i = 0; i < siblings.size(); ++i) {
+			IChatComponent child = (IChatComponent) siblings.get(i);
+			IChatComponent resolvedChild = resolveComponentNode(child, viewer);
+			if (resolvedChild != child) {
+				resolvedChild.getChatStyle().setParentStyle(out.getChatStyle());
+				siblings.set(i, resolvedChild);
+			}
+		}
+		return out;
+	}
 
 	private static String dimensionName(int dimension) {
         switch (dimension) {
@@ -1425,7 +1465,7 @@ public void playerLoggedOut(EntityPlayerMP playerIn) {
 	public void configureLAN(int gamemode, boolean cheats) {
 		lanGamemode = WorldSettings.GameType.getByID(gamemode);
 		lanCheats = cheats;
-		this.broadcastTabHeaderFooter(); // gamemode/cheats (and possibly relay/code) just changed - re-resolve for everyone
+		this.broadcastTabHeaderFooter();
 	}
 
 	public void configureLAN(int gamemode, boolean cheats, String resourcePackUrl, String resourcePackHash,

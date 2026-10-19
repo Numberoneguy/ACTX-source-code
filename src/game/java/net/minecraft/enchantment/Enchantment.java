@@ -121,6 +121,11 @@ public abstract class Enchantment {
 			2, EnumEnchantmentType.FISHING_ROD);
 	public static final Enchantment lure = new EnchantmentFishingSpeed(62, new ResourceLocation("lure"), 2,
 			EnumEnchantmentType.FISHING_ROD);
+	public static final Enchantment mending = new EnchantmentMending(70, new ResourceLocation("mending"), 2);
+	public static final Enchantment density = new EnchantmentDensity(80, new ResourceLocation("density"), 5);
+	public static final Enchantment breach = new EnchantmentBreach(81, new ResourceLocation("breach"), 2);
+	public static final Enchantment windBurst = new EnchantmentWindBurst(82, new ResourceLocation("wind_burst"), 2);
+
 	public final int effectId;
 	private final int weight;
 	public EnumEnchantmentType type;

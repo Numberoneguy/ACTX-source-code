@@ -16,9 +16,11 @@ import net.lax1dude.eaglercraft.v1_8.opengl.ImageData;
 import net.lax1dude.eaglercraft.v1_8.opengl.WorldRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.OFFontTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.settings.GameSettings;
@@ -71,6 +73,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 	protected float posX;
 	protected float posY;
 	protected boolean unicodeFlag;
+	private final GameSettings gameSettingsOF;
 	protected boolean bidiFlag;
 	protected float red;
 	protected float blue;
@@ -102,6 +105,8 @@ public class FontRenderer implements IResourceManagerReloadListener {
 		this.locationFontTexture = location;
 		this.renderEngine = textureManagerIn;
 		this.unicodeFlag = unicode;
+		this.gameSettingsOF = gameSettingsIn;
+		this.registerFontTexture(this.locationFontTexture, false);
 		textureManagerIn.bindTexture(this.locationFontTexture);
 
 		for (int i = 0; i < 32; ++i) {
@@ -134,6 +139,25 @@ public class FontRenderer implements IResourceManagerReloadListener {
 		this.readGlyphSizes();
 	}
 
+	private void registerFontTexture(ResourceLocation location, boolean force) {
+		if (force) {
+			this.renderEngine.deleteTexture(location);
+		} else if (this.renderEngine.getTexture(location) instanceof OFFontTexture) {
+			return;
+		}
+		this.renderEngine.loadTexture(location, new OFFontTexture(location, this.gameSettingsOF));
+	}
+
+	public void reloadOFFont() {
+		this.registerFontTexture(this.locationFontTexture, true);
+		for (int i = 0; i < unicodePageLocations.length; ++i) {
+			if (unicodePageLocations[i] != null) {
+				this.registerFontTexture(unicodePageLocations[i], true);
+			}
+		}
+		this.readFontTexture();
+	}
+
 	public void onResourceManagerReload(IResourceManager resourceManager) {
 		this.readFontTexture();
 	}
@@ -141,8 +165,10 @@ public class FontRenderer implements IResourceManagerReloadListener {
 	private void readFontTexture() {
 		ImageData bufferedimage;
 		try {
-			bufferedimage = TextureUtil.readBufferedImage(Minecraft.getMinecraft().getResourceManager()
-					.getResource(this.locationFontTexture).getInputStream());
+			IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
+			IResource resource = this.gameSettingsOF.customFontsOF ? resourceManager.getResource(this.locationFontTexture)
+					: resourceManager.getAllResources(this.locationFontTexture).get(0);
+			bufferedimage = TextureUtil.readBufferedImage(resource.getInputStream());
 		} catch (IOException ioexception) {
 			throw new RuntimeException(ioexception);
 		}
@@ -247,6 +273,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 		if (unicodePageLocations[parInt1] == null) {
 			unicodePageLocations[parInt1] = new ResourceLocation(
 					HString.format("textures/font/unicode_page_%02x.png", new Object[] { Integer.valueOf(parInt1) }));
+			this.registerFontTexture(unicodePageLocations[parInt1], false);
 		}
 
 		return unicodePageLocations[parInt1];

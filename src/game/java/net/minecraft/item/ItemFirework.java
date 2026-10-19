@@ -54,6 +54,23 @@ public class ItemFirework extends Item {
 		}
 	}
 
+	public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn) {
+		if (playerIn.isElytraFlying()) {
+			if (worldIn.isRemote) {
+				int flight = 1;
+				if (itemStackIn.hasTagCompound() && itemStackIn.getTagCompound().hasKey("Fireworks", 10)) {
+					flight += itemStackIn.getTagCompound().getCompoundTag("Fireworks").getByte("Flight");
+				}
+
+				playerIn.boostElytra(10 * flight + worldIn.rand.nextInt(6) + worldIn.rand.nextInt(7));
+			} else if (!playerIn.capabilities.isCreativeMode) {
+				--itemStackIn.stackSize;
+			}
+		}
+
+		return itemStackIn;
+	}
+
 	/**+
 	 * allows items to add custom lines of information to the
 	 * mouseover description

@@ -290,5 +290,6 @@ public abstract class TileEntity {
 		addMapping(TileEntityComparator.class, TileEntityComparator::new, "Comparator");
 		addMapping(TileEntityFlowerPot.class, TileEntityFlowerPot::new, "FlowerPot");
 		addMapping(TileEntityBanner.class, TileEntityBanner::new, "Banner");
+		addMapping(TileEntityShulkerBox.class, TileEntityShulkerBox::new, "shulker_box");
 	}
 }

@@ -112,15 +112,6 @@ public class SingleplayerServerController implements ISaveFormat {
 		}
 	}
 	
-
-
-	public static void sendWandPos(BlockPos pos, int clickType) {
-		Minecraft mc = Minecraft.getMinecraft();
-		if (mc == null || mc.thePlayer == null) return;
-		String name = mc.thePlayer.getGameProfile().getName();
-		sendIPCPacket(new IPCPacket25WandPos(name, pos.getX(), pos.getY(), pos.getZ(), clickType));
-	}
-
 	public static void kickPlayer(String name, String reason) {
         sendIPCPacket(new IPCPacket1EKickPlayer(name, reason == null ? "" : reason));
     }

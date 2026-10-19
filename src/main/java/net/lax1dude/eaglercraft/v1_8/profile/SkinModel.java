@@ -24,7 +24,7 @@ public enum SkinModel {
 	LONG_ARMS(3, HighPolySkin.LONG_ARMS), WEIRD_CLIMBER_DUDE(4, HighPolySkin.WEIRD_CLIMBER_DUDE),
 	LAXATIVE_DUDE(5, HighPolySkin.LAXATIVE_DUDE), BABY_CHARLES(6, HighPolySkin.BABY_CHARLES),
 	BABY_WINSTON(7, HighPolySkin.BABY_WINSTON),
-	le_verity(8, HighPolySkin.le_verity);
+	bigboned(8, HighPolySkin.bigboned);
 	
 	public final int id;	
 	public final int width;
@@ -33,7 +33,7 @@ public enum SkinModel {
 	public final boolean sanitize;
 	public final HighPolySkin highPoly;
 	
-	public static final SkinModel[] skinModels = new SkinModel[11];
+	public static final SkinModel[] skinModels = new SkinModel[9];
 	private static final Map<String, SkinModel> skinModelsByName = new HashMap<>();
 	
 	private SkinModel(int id, int w, int h, String profileSkinType, boolean sanitize) {

@@ -104,8 +104,12 @@ public class CommandTitle extends CommandBase {
 								new Object[] { throwable == null ? "" : throwable.getMessage() });
 					}
 
-					S45PacketTitle s45packettitle1 = new S45PacketTitle(s45packettitle$type,
-							ChatComponentProcessor.processComponent(parICommandSender, ichatcomponent, entityplayermp));
+					IChatComponent processed = ChatComponentProcessor.processComponent(parICommandSender,
+							ichatcomponent, entityplayermp);
+					// %player%, %health%, %coords%, ... work in titles and subtitles like in the tab list
+					processed = MinecraftServer.getServer().getConfigurationManager()
+							.resolveComponentPlaceholders(processed, entityplayermp);
+					S45PacketTitle s45packettitle1 = new S45PacketTitle(s45packettitle$type, processed);
 					entityplayermp.playerNetServerHandler.sendPacket(s45packettitle1);
 					notifyOperators(parICommandSender, this, "commands.title.success", new Object[0]);
 				}

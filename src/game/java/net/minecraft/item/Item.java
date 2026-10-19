@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockShulkerBox;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.BlockFlower;
@@ -673,6 +674,10 @@ public class Item {
 		registerItemBlock(Blocks.command_block);
 		registerItemBlock(Blocks.chain_command_block);
 		registerItemBlock(Blocks.repeating_command_block);
+		for (int shulkerMeta = 0; shulkerMeta < 16; ++shulkerMeta) {
+			Block shulkerBlock = BlockShulkerBox.getBlock(EnumDyeColor.byMetadata(shulkerMeta));
+			registerItemBlock(shulkerBlock, new ItemShulkerBox(shulkerBlock));
+		}
 		registerItemBlock(Blocks.beacon);
 		registerItemBlock(Blocks.cobblestone_wall, (new ItemMultiTexture(Blocks.cobblestone_wall,
 				Blocks.cobblestone_wall, new Function<ItemStack, String>() {
@@ -776,6 +781,22 @@ public class Item {
 				(new ItemPickaxe(Item.ToolMaterial.EMERALD)).setUnlocalizedName("pickaxeDiamond"));
 		registerItem(279, (String) "diamond_axe",
 				(new ItemAxe(Item.ToolMaterial.EMERALD)).setUnlocalizedName("hatchetDiamond"));
+		registerItem(743, "netherite_sword",
+				(new ItemSword(Item.ToolMaterial.NETHERITE)).setUnlocalizedName("swordNetherite"));
+		registerItem(744, "netherite_shovel",
+				(new ItemSpade(Item.ToolMaterial.NETHERITE)).setUnlocalizedName("shovelNetherite"));
+		registerItem(745, "netherite_pickaxe",
+				(new ItemPickaxe(Item.ToolMaterial.NETHERITE)).setUnlocalizedName("pickaxeNetherite"));
+		registerItem(746, "netherite_axe",
+				(new ItemAxe(Item.ToolMaterial.NETHERITE)).setUnlocalizedName("hatchetNetherite"));
+		registerItem(747, "netherite_hoe",
+				(new ItemHoe(Item.ToolMaterial.NETHERITE)).setUnlocalizedName("hoeNetherite"));
+		registerItem(752, "mace", 
+				(new ItemMace(Item.ToolMaterial.MACE)).setUnlocalizedName("mace").setCreativeTab(CreativeTabs.tabCombat));
+		registerItem(459, "netherite_ingot", 
+				(new Item()).setUnlocalizedName("netheriteIngot").setCreativeTab(CreativeTabs.tabMaterials));
+		registerItem(443, "elytra", 
+				(new ItemElytra()).setUnlocalizedName("elytra").setMaxStackSize(1));
 		registerItem(280, (String) "stick",
 				(new Item()).setFull3D().setUnlocalizedName("stick").setCreativeTab(CreativeTabs.tabMaterials));
 		registerItem(281, (String) "bowl",
@@ -838,6 +859,14 @@ public class Item {
 				(new ItemArmor(ItemArmor.ArmorMaterial.DIAMOND, 3, 2)).setUnlocalizedName("leggingsDiamond"));
 		registerItem(313, (String) "diamond_boots",
 				(new ItemArmor(ItemArmor.ArmorMaterial.DIAMOND, 3, 3)).setUnlocalizedName("bootsDiamond"));
+		registerItem(748, "netherite_helmet",
+				(new ItemArmor(ItemArmor.ArmorMaterial.NETHERITE, 5, 0)).setUnlocalizedName("helmetNetherite"));
+		registerItem(749, "netherite_chestplate",
+				(new ItemArmor(ItemArmor.ArmorMaterial.NETHERITE, 5, 1)).setUnlocalizedName("chestplateNetherite"));
+		registerItem(750, "netherite_leggings",
+				(new ItemArmor(ItemArmor.ArmorMaterial.NETHERITE, 5, 2)).setUnlocalizedName("leggingsNetherite"));
+		registerItem(751, "netherite_boots",
+				(new ItemArmor(ItemArmor.ArmorMaterial.NETHERITE, 5, 3)).setUnlocalizedName("bootsNetherite"));
 		registerItem(314, (String) "golden_helmet",
 				(new ItemArmor(ItemArmor.ArmorMaterial.GOLD, 4, 0)).setUnlocalizedName("helmetGold"));
 		registerItem(315, (String) "golden_chestplate",
@@ -1026,6 +1055,9 @@ public class Item {
 		registerItem(423, (String) "mutton", (new ItemFood(2, 0.3F, true)).setUnlocalizedName("muttonRaw"));
 		registerItem(424, (String) "cooked_mutton", (new ItemFood(6, 0.8F, true)).setUnlocalizedName("muttonCooked"));
 		registerItem(425, (String) "banner", (new ItemBanner()).setUnlocalizedName("banner"));
+		registerItem(426, (String) "end_crystal", (new ItemEndCrystal()).setUnlocalizedName("end_crystal"));
+		registerItem(449, "totem", (new Item()).setUnlocalizedName("totem").setMaxStackSize(1).setCreativeTab(CreativeTabs.tabCombat));
+		
 		registerItem(427, (String) "spruce_door", (new ItemDoor(Blocks.spruce_door)).setUnlocalizedName("doorSpruce"));
 		registerItem(428, (String) "birch_door", (new ItemDoor(Blocks.birch_door)).setUnlocalizedName("doorBirch"));
 		registerItem(429, (String) "jungle_door", (new ItemDoor(Blocks.jungle_door)).setUnlocalizedName("doorJungle"));
@@ -1071,7 +1103,8 @@ public class Item {
 
 	public static enum ToolMaterial {
 		WOOD(0, 59, 2.0F, 0.0F, 15), STONE(1, 131, 4.0F, 1.0F, 5), IRON(2, 250, 6.0F, 2.0F, 14),
-		EMERALD(3, 1561, 8.0F, 3.0F, 10), GOLD(0, 32, 12.0F, 0.0F, 22);
+		EMERALD(3, 1561, 8.0F, 3.0F, 10), GOLD(0, 32, 12.0F, 0.0F, 22), NETHERITE(4, 2031, 9.0F, 4.0F, 15),
+		MACE(0, 500, 1.0F, 2.0F, 15);
 
 		private final int harvestLevel;
 		private final int maxUses;
@@ -1112,8 +1145,11 @@ public class Item {
 			return this == WOOD ? Item.getItemFromBlock(Blocks.planks)
 					: (this == STONE ? Item.getItemFromBlock(Blocks.cobblestone)
 							: (this == GOLD ? Items.gold_ingot
-									: (this == IRON ? Items.iron_ingot : (this == EMERALD ? Items.diamond : null))));
+									: (this == IRON ? Items.iron_ingot
+											: (this == EMERALD ? Items.diamond
+													: (this == NETHERITE ? Items.netherite_ingot : null)))));
 		}
+
 	}
 
 	public float getHeldItemBrightnessEagler(ItemStack itemStack) {

@@ -54,13 +54,16 @@ public class RenderEntityItem extends Render<EntityItem> {
 			return 0;
 		} else {
 			boolean flag = parIBakedModel.isGui3d();
-			int i = this.func_177078_a(itemstack);
+			boolean fastOF = this.renderManager.options != null && this.renderManager.options.droppedItemsOF == 1;
+			int i = fastOF ? 1 : this.func_177078_a(itemstack);
 			float f = 0.25F;
 			float f1 = MathHelper.sin(((float) itemIn.getAge() + parFloat1) / 10.0F + itemIn.hoverStart) * 0.1F + 0.1F;
 			float f2 = parIBakedModel.getItemCameraTransforms()
 					.getTransform(ItemCameraTransforms.TransformType.GROUND).scale.y;
 			GlStateManager.translate((float) parDouble1, (float) parDouble2 + f1 + 0.25F * f2, (float) parDouble3);
-			if (flag || this.renderManager.options != null) {
+			if (fastOF) {
+				GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
+			} else if (flag || this.renderManager.options != null) {
 				float f3 = (((float) itemIn.getAge() + parFloat1) / 20.0F + itemIn.hoverStart) * 57.295776F;
 				GlStateManager.rotate(f3, 0.0F, 1.0F, 0.0F);
 			}

@@ -382,6 +382,8 @@ public class ModelBakery {
 				Lists.newArrayList(new String[] { "acacia_leaves", "dark_oak_leaves" }));
 		this.variantNames.put(Item.getItemFromBlock(Blocks.log2),
 				Lists.newArrayList(new String[] { "acacia_log", "dark_oak_log" }));
+		this.variantNames.put(Items.elytra, 
+				Lists.newArrayList(new String[] { "elytra", "broken_elytra" }));
 		this.variantNames.put(Item.getItemFromBlock(Blocks.prismarine),
 				Lists.newArrayList(new String[] { "prismarine", "prismarine_bricks", "dark_prismarine" }));
 		this.variantNames.put(Item.getItemFromBlock(Blocks.carpet),

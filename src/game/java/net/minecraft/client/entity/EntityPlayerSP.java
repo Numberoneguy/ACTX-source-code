@@ -25,6 +25,7 @@ import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.Entity;
+import net.lax1dude.eaglercraft.v1_8.socket.EaglercraftNetworkManager;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityMinecart;
@@ -32,6 +33,7 @@ import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemElytra;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.network.play.client.C03PacketPlayer;
@@ -91,6 +93,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 	public MovementInput movementInput;
 	protected Minecraft mc;
 	protected int sprintToggleTimer;
+	private boolean localElytra;
 	public int sprintingTicksLeft;
 	public float renderArmYaw;
 	public float renderArmPitch;
@@ -101,6 +104,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 	public float timeInPortal;
 	public float prevTimeInPortal;
 	private StatFileWriter statWriter;
+	private net.minecraft.client.audio.ITickableSound elytraSound;
 
 	public EntityPlayerSP(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandler, StatFileWriter statWriter) {
 		super(worldIn, netHandler.getGameProfile());
@@ -147,6 +151,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 
 		if (this.worldObj.isBlockLoaded(new BlockPos(this.posX, 0.0D, this.posZ))) {
 			super.onUpdate();
+			net.minecraft.actx.server.actxcooldown.tick(this);
 			if (this.isRiding()) {
 				this.sendQueue.addToSendQueue(
 						new C03PacketPlayer.C05PacketPlayerLook(this.rotationYaw, this.rotationPitch, this.onGround));
@@ -496,6 +501,29 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 		return true;
 	}
 
+	public boolean isElytraFlying() {
+		return super.isElytraFlying() || this.localElytra;
+	}
+
+	private void startElytraFlight() {
+		EaglercraftNetworkManager manager = this.sendQueue.getNetworkManager();
+		boolean local = manager instanceof ClientIntegratedServerNetworkManager
+			|| manager instanceof LANClientNetworkManager;
+			if (local) {
+				this.sendQueue
+				.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.START_FALL_FLYING));
+			} else {
+				this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.START_SNEAKING));
+				this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.STOP_SNEAKING));
+			if (this.serverSneakState) {
+				this.sendQueue
+				.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.START_SNEAKING));
+
+			}
+		this.localElytra = true;
+		}
+	} 
+
 	public boolean isRidingHorse() {
 		return this.ridingEntity != null && this.ridingEntity instanceof EntityHorse
 				&& ((EntityHorse) this.ridingEntity).isHorseSaddled();
@@ -715,6 +743,22 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 					this.sendPlayerAbilities();
 					this.flyToggleTimer = 0;
 				}
+			}
+		}
+
+		if (this.movementInput.jump && !flag && !this.onGround && this.motionY < 0.0D && !this.isElytraFlying()
+				&& !this.capabilities.isFlying && !this.isInWater()) {
+			ItemStack glideChest = this.getEquipmentInSlot(3);
+			if (glideChest != null && glideChest.getItem() instanceof ItemElytra && ItemElytra.isUsable(glideChest)) {
+				this.startElytraFlight();
+			}
+		}
+
+		if (this.localElytra) {
+			ItemStack glideCheck = this.getEquipmentInSlot(3);
+			if (this.onGround || this.isRiding() || this.isInWater() || this.capabilities.isFlying || glideCheck == null
+					|| !(glideCheck.getItem() instanceof ItemElytra) || !ItemElytra.isUsable(glideCheck)) {
+				this.localElytra = false;
 			}
 		}
 

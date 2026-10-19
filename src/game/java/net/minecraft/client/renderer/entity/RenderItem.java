@@ -60,6 +60,10 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFishFood;
 import net.minecraft.item.ItemPotion;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemElytra;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumWorldBlockLayer;
@@ -578,6 +582,22 @@ public class RenderItem implements IResourceManagerReloadListener {
 		this.registerBlock(Blocks.carpet, EnumDyeColor.SILVER.getMetadata(), "silver_carpet");
 		this.registerBlock(Blocks.carpet, EnumDyeColor.WHITE.getMetadata(), "white_carpet");
 		this.registerBlock(Blocks.carpet, EnumDyeColor.YELLOW.getMetadata(), "yellow_carpet");
+		this.registerBlock(Blocks.white_shulker_box, "white_shulker_box");	
+		this.registerBlock(Blocks.orange_shulker_box, "orange_shulker_box");
+		this.registerBlock(Blocks.magenta_shulker_box, "magenta_shulker_box");
+		this.registerBlock(Blocks.light_blue_shulker_box, "light_blue_shulker_box");
+		this.registerBlock(Blocks.yellow_shulker_box, "yellow_shulker_box");
+		this.registerBlock(Blocks.lime_shulker_box, "lime_shulker_box");
+		this.registerBlock(Blocks.pink_shulker_box, "pink_shulker_box");
+		this.registerBlock(Blocks.gray_shulker_box, "gray_shulker_box");
+		this.registerBlock(Blocks.silver_shulker_box, "silver_shulker_box");
+		this.registerBlock(Blocks.cyan_shulker_box, "cyan_shulker_box");
+		this.registerBlock(Blocks.purple_shulker_box, "purple_shulker_box");
+		this.registerBlock(Blocks.blue_shulker_box, "blue_shulker_box");
+		this.registerBlock(Blocks.brown_shulker_box, "brown_shulker_box");
+		this.registerBlock(Blocks.green_shulker_box, "green_shulker_box");
+		this.registerBlock(Blocks.red_shulker_box, "red_shulker_box");
+		this.registerBlock(Blocks.black_shulker_box, "black_shulker_box");
 		this.registerBlock(Blocks.cobblestone_wall, BlockWall.EnumType.MOSSY.getMetadata(), "mossy_cobblestone_wall");
 		this.registerBlock(Blocks.cobblestone_wall, BlockWall.EnumType.NORMAL.getMetadata(), "cobblestone_wall");
 		this.registerBlock(Blocks.dirt, BlockDirt.DirtType.COARSE_DIRT.getMetadata(), "coarse_dirt");
@@ -1024,11 +1044,28 @@ public class RenderItem implements IResourceManagerReloadListener {
 		this.registerItem(Items.ghast_tear, "ghast_tear");
 		this.registerItem(Items.gold_nugget, "gold_nugget");
 		this.registerItem(Items.nether_wart, "nether_wart");
+		this.registerItem(Items.totem, "totem");
+		this.registerItem(Items.mace, "mace");
+		this.registerItem(Items.netherite_helmet, "netherite_helmet");
+		this.registerItem(Items.netherite_chestplate, "netherite_chestplate");
+		this.registerItem(Items.netherite_leggings, "netherite_leggings");
+		this.registerItem(Items.netherite_boots, "netherite_boots");
+		this.registerItem(Items.netherite_sword, "netherite_sword");
+		this.registerItem(Items.netherite_shovel, "netherite_shovel");
+		this.registerItem(Items.netherite_pickaxe, "netherite_pickaxe");
+		this.registerItem(Items.netherite_axe, "netherite_axe");
+		this.registerItem(Items.netherite_hoe, "netherite_hoe");
+		this.registerItem(Items.netherite_ingot, "netherite_ingot");
+		this.itemModelMesher.register(Items.elytra, new ItemMeshDefinition() {
+			public ModelResourceLocation getModelLocation(ItemStack stack) {
+				boolean isUsable = stack != null && stack.getItemDamage() < stack.getMaxDamage() - 1;
+				return new ModelResourceLocation(new ResourceLocation(isUsable ? "elytra" : "broken_elytra"), "inventory");
+			}
+		});
+
 		this.itemModelMesher.register(Items.potionitem, new ItemMeshDefinition() {
 			public ModelResourceLocation getModelLocation(ItemStack itemstack) {
-				return ItemPotion.isSplash(itemstack.getMetadata())
-						? new ModelResourceLocation("bottle_splash", "inventory")
-						: new ModelResourceLocation("bottle_drinkable", "inventory");
+				return new ModelResourceLocation(ItemPotion.isSplash(itemstack.getMetadata()) ? "bottle_splash" : "bottle_drinkable", "inventory");
 			}
 		});
 		this.registerItem(Items.glass_bottle, "glass_bottle");
@@ -1082,6 +1119,9 @@ public class RenderItem implements IResourceManagerReloadListener {
 				return new ModelResourceLocation("banner", "inventory");
 			}
 		});
+		// 1.9 item
+		this.registerItem(Items.end_crystal, "end_crystal");
+		// end
 		this.registerItem(Items.record_13, "record_13");
 		this.registerItem(Items.record_cat, "record_cat");
 		this.registerItem(Items.record_blocks, "record_blocks");
@@ -1107,8 +1147,10 @@ public class RenderItem implements IResourceManagerReloadListener {
 			}
 		});
 		this.registerBlock(Blocks.command_block, "command_block");
+		// 1.9 item ad b
 		this.registerBlock(Blocks.chain_command_block, "chain_command_block");
 		this.registerBlock(Blocks.repeating_command_block, "repeating_command_block");
+		// end
 		this.registerItem(Items.fireworks, "fireworks");
 		this.registerItem(Items.command_block_minecart, "command_block_minecart");
 		this.registerBlock(Blocks.barrier, "barrier");

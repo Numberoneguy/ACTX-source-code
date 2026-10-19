@@ -1,9 +1,12 @@
 package net.minecraft.network.play.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.entity.DataWatcher;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -66,6 +69,37 @@ public class S1CPacketEntityMetadata implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleEntityMetadata(this);
+	}
+
+	public S1CPacketEntityMetadata actxVanillaCopy() {
+		if (this.field_149378_b == null) {
+			return this;
+		}
+		boolean changed = false;
+		for (int i = 0; i < this.field_149378_b.size(); ++i) {
+			DataWatcher.WatchableObject object = this.field_149378_b.get(i);
+			if (object.getObjectType() == 5 && object.getObject() != null
+					&& actxcompat.isCustomItem(((ItemStack) object.getObject()).getItem())) {
+				changed = true;
+				break;
+			}
+		}
+		if (!changed) {
+			return this;
+		}
+		S1CPacketEntityMetadata copy = new S1CPacketEntityMetadata();
+		copy.entityId = this.entityId;
+		copy.field_149378_b = new ArrayList<DataWatcher.WatchableObject>(this.field_149378_b.size());
+		for (int i = 0; i < this.field_149378_b.size(); ++i) {
+			DataWatcher.WatchableObject object = this.field_149378_b.get(i);
+			if (object.getObjectType() == 5 && object.getObject() != null) {
+				ItemStack stack = actxcompat.stackForClient((ItemStack) object.getObject(), false);
+				copy.field_149378_b.add(new DataWatcher.WatchableObject(5, object.getDataValueId(), stack));
+			} else {
+				copy.field_149378_b.add(object);
+			}
+		}
+		return copy;
 	}
 
 	public List<DataWatcher.WatchableObject> func_149376_c() {

@@ -257,6 +257,22 @@ public class Blocks {
 	public static BlockSlab double_stone_slab2;
 	public static BlockSlab stone_slab2;
 	public static BlockFuny what_the_fuck;
+	public static Block white_shulker_box;
+	public static Block orange_shulker_box;
+	public static Block magenta_shulker_box;
+	public static Block light_blue_shulker_box;
+	public static Block yellow_shulker_box;
+	public static Block lime_shulker_box;
+	public static Block pink_shulker_box;
+	public static Block gray_shulker_box;
+	public static Block silver_shulker_box;
+	public static Block cyan_shulker_box;
+	public static Block purple_shulker_box;
+	public static Block blue_shulker_box;
+	public static Block brown_shulker_box;
+	public static Block green_shulker_box;
+	public static Block red_shulker_box;
+	public static Block black_shulker_box;
 
 	/**+
 	 * Returns the Block in the blockRegistry with the specified
@@ -471,6 +487,22 @@ public class Blocks {
 			double_stone_slab2 = (BlockSlab) getRegisteredBlock("double_stone_slab2");
 			stone_slab2 = (BlockSlab) getRegisteredBlock("stone_slab2");
 			what_the_fuck = (BlockFuny) getRegisteredBlock("what_the_fuck");
+			white_shulker_box = getRegisteredBlock("white_shulker_box");
+			orange_shulker_box = getRegisteredBlock("orange_shulker_box");
+			magenta_shulker_box = getRegisteredBlock("magenta_shulker_box");
+			light_blue_shulker_box = getRegisteredBlock("light_blue_shulker_box");
+			yellow_shulker_box = getRegisteredBlock("yellow_shulker_box");
+			lime_shulker_box = getRegisteredBlock("lime_shulker_box");
+			pink_shulker_box = getRegisteredBlock("pink_shulker_box");
+			gray_shulker_box = getRegisteredBlock("gray_shulker_box");
+			silver_shulker_box = getRegisteredBlock("silver_shulker_box");
+			cyan_shulker_box = getRegisteredBlock("cyan_shulker_box");
+			purple_shulker_box = getRegisteredBlock("purple_shulker_box");
+			blue_shulker_box = getRegisteredBlock("blue_shulker_box");
+			brown_shulker_box = getRegisteredBlock("brown_shulker_box");
+			green_shulker_box = getRegisteredBlock("green_shulker_box");
+			red_shulker_box = getRegisteredBlock("red_shulker_box");
+			black_shulker_box = getRegisteredBlock("black_shulker_box");
 		}
 	}
 }

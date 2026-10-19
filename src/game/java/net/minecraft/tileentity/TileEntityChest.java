@@ -51,6 +51,7 @@ public class TileEntityChest extends TileEntityLockable implements ITickable, II
 	private int ticksSinceSync;
 	private int cachedChestType;
 	private String customName;
+	private int capacity = 1;
 
 	public TileEntityChest() {
 		this.cachedChestType = -1;
@@ -64,7 +65,22 @@ public class TileEntityChest extends TileEntityLockable implements ITickable, II
 	 * Returns the number of slots in the inventory.
 	 */
 	public int getSizeInventory() {
-		return 27;
+		return this.capacity * 27;
+	}
+
+	public int getCapacity() {
+		return this.capacity;
+	}
+
+	public void setCapacity(int newCapacity) {
+		int c = newCapacity >= 2 ? 2 : 1;
+		if (c != this.capacity) {
+			ItemStack[] old = this.chestContents;
+			this.capacity = c;
+			this.chestContents = new ItemStack[this.getSizeInventory()];
+			System.arraycopy(old, 0, this.chestContents, 0, Math.min(old.length, this.chestContents.length));
+			this.markDirty();
+		}
 	}
 
 	/**+
@@ -147,6 +163,7 @@ public class TileEntityChest extends TileEntityLockable implements ITickable, II
 	public void readFromNBT(NBTTagCompound nbttagcompound) {
 		super.readFromNBT(nbttagcompound);
 		NBTTagList nbttaglist = nbttagcompound.getTagList("Items", 10);
+		this.capacity = nbttagcompound.getInteger("Capacity") >= 2 ? 2 : 1;
 		this.chestContents = new ItemStack[this.getSizeInventory()];
 		if (nbttagcompound.hasKey("CustomName", 8)) {
 			this.customName = nbttagcompound.getString("CustomName");
@@ -176,6 +193,7 @@ public class TileEntityChest extends TileEntityLockable implements ITickable, II
 		}
 
 		nbttagcompound.setTag("Items", nbttaglist);
+		nbttagcompound.setInteger("Capacity", this.capacity);
 		if (this.hasCustomName()) {
 			nbttagcompound.setString("CustomName", this.customName);
 		}
@@ -249,10 +267,13 @@ public class TileEntityChest extends TileEntityLockable implements ITickable, II
 	}
 
 	protected TileEntityChest getAdjacentChest(EnumFacing side) {
+		if (this.capacity > 1) {
+			return null;
+		}
 		BlockPos blockpos = this.pos.offset(side);
 		if (this.isChestAt(blockpos)) {
 			TileEntity tileentity = this.worldObj.getTileEntity(blockpos);
-			if (tileentity instanceof TileEntityChest) {
+			if (tileentity instanceof TileEntityChest && ((TileEntityChest) tileentity).capacity <= 1) {
 				TileEntityChest tileentitychest = (TileEntityChest) tileentity;
 				tileentitychest.func_174910_a(this, side.getOpposite());
 				return tileentitychest;

@@ -46,7 +46,6 @@ import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 import java.util.HashSet;                                    
 import java.util.Set;                                        
-import net.minecraft.command.WorldEditCommand;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.BlockPos;           
 import net.lax1dude.eaglercraft.v1_8.sp.server.export.WorldConverterEPK;
@@ -571,16 +570,6 @@ public class EaglerIntegratedServerWorker {
 			}
 			case IPCPacket1BEnableLogging.ID: {
 				enableLoggingRedirector(((IPCPacket1BEnableLogging)ipc).enable);
-				break;
-			}
-			case IPCPacket25WandPos.ID: {
-				IPCPacket25WandPos pkt = (IPCPacket25WandPos) ipc;
-				if (!isServerStopped()) {
-					EntityPlayerMP player = currentProcess.getConfigurationManager().getPlayerByUsername(pkt.playerName);
-					if (player != null) {
-						WorldEditCommand.handleWandClick(player, new BlockPos(pkt.x, pkt.y, pkt.z), pkt.clickType);
-					}
-				}
 				break;
 			}
 			case IPCPacket26SetTabHeaderFooter.ID: {

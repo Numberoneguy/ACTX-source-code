@@ -71,7 +71,6 @@ public class IPCPacketManager {
 		mappings.put(IPCPacket22GiveItem.ID,             IPCPacket22GiveItem::new);
 		mappings.put(IPCPacket23ClearInventory.ID,       IPCPacket23ClearInventory::new);
 		mappings.put(IPCPacket24HealFeedPlayer.ID,       IPCPacket24HealFeedPlayer::new);
-		mappings.put(IPCPacket25WandPos.ID,             IPCPacket25WandPos::new);
 		mappings.put(IPCPacket26SetTabHeaderFooter.ID,		IPCPacket26SetTabHeaderFooter::new);
 		mappings.put(IPCPacket27SetAnimation.ID,		IPCPacket27SetAnimation::new);
 		mappings.put(IPCPacket28RemoveAnimation.ID, IPCPacket28RemoveAnimation::new);

@@ -3,6 +3,7 @@ package net.minecraft.network.play.server;
 import java.io.IOException;
 import java.util.List;
 
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -104,6 +105,32 @@ public class S26PacketMapChunkBulk implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleMapChunkBulk(this);
+	}
+
+	public S26PacketMapChunkBulk actxVanillaCopy() {
+		boolean changed = false;
+		byte[][] replaced = new byte[this.chunksData.length][];
+		for (int i = 0; i < this.chunksData.length; ++i) {
+			replaced[i] = actxcompat.vanillaChunkBlocks(this.chunksData[i].data, this.chunksData[i].dataSize);
+			if (replaced[i] != this.chunksData[i].data) {
+				changed = true;
+			}
+		}
+		if (!changed) {
+			return this;
+		}
+		S26PacketMapChunkBulk copy = new S26PacketMapChunkBulk();
+		copy.xPositions = this.xPositions;
+		copy.zPositions = this.zPositions;
+		copy.isOverworld = this.isOverworld;
+		copy.chunksData = new S21PacketChunkData.Extracted[this.chunksData.length];
+		for (int i = 0; i < this.chunksData.length; ++i) {
+			S21PacketChunkData.Extracted extracted = new S21PacketChunkData.Extracted();
+			extracted.dataSize = this.chunksData[i].dataSize;
+			extracted.data = replaced[i];
+			copy.chunksData[i] = extracted;
+		}
+		return copy;
 	}
 
 	public int getChunkX(int parInt1) {

@@ -128,7 +128,7 @@ public class giver extends GuiScreen {
         } else if (button.id == 3) {
             ItemStack editorstack = this.currentitemstack != null ? this.currentitemstack : this.mc.thePlayer.getHeldItem();
             if (editorstack == null) {
-                editorstack = new ItemStack(Block.getBlockById(3), 1, 0);
+                editorstack = new ItemStack(Block.getBlockById(210), 1, 0);
             }
             this.mc.displayGuiScreen(new itemstackmodifier(this, editorstack));
         } else if (button.id == 6) {

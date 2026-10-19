@@ -7,6 +7,7 @@ import net.lax1dude.eaglercraft.v1_8.EaglercraftRandom;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -1552,6 +1553,14 @@ public class Block {
 				.setResistance(6000000.0F).setUnlocalizedName("repeatingCommandBlock"));
 		registerBlock(211, (String) "chain_command_block", (new BlockCommandBlock(1)).setBlockUnbreakable()
 				.setResistance(6000000.0F).setUnlocalizedName("chainCommandBlock"));
+		for (int shulkerMeta = 0; shulkerMeta < 16; ++shulkerMeta) {
+			EnumDyeColor shulkerColor = EnumDyeColor.byMetadata(shulkerMeta);
+			String shulkerName = shulkerColor.getUnlocalizedName();
+			registerBlock(219 + shulkerMeta, shulkerColor.getName() + "_shulker_box",
+					(new BlockShulkerBox(shulkerColor)).setHardness(2.0F).setStepSound(soundTypeStone)
+							.setUnlocalizedName("shulkerBox" + Character.toUpperCase(shulkerName.charAt(0))
+									+ shulkerName.substring(1)));
+		}
 		blockRegistry.validateKey();
 
 		for (Block block13 : blockRegistry) {

@@ -220,6 +220,24 @@ public class Items {
 	public static Item prismarine_shard;
 	public static Item prismarine_crystals;
 	public static Item banner;
+	// 1.9 items
+	public static Item end_crystal;
+	public static Item totem;
+	// 1.16 items
+	public static Item mace;
+	public static Item netherite_helmet;
+	public static Item netherite_chestplate;
+	public static Item netherite_leggings;
+	public static Item netherite_boots;
+	public static Item netherite_sword;
+	public static Item netherite_shovel;
+	public static Item netherite_pickaxe;
+	public static Item netherite_axe;
+	public static Item netherite_hoe;
+	public static Item netherite_ingot;
+	public static Item elytra;
+
+
 
 	private static Item getRegisteredItem(String name) {
 		return (Item) Item.itemRegistry.getObject(new ResourceLocation(name));
@@ -416,6 +434,20 @@ public class Items {
 			prismarine_shard = getRegisteredItem("prismarine_shard");
 			prismarine_crystals = getRegisteredItem("prismarine_crystals");
 			banner = getRegisteredItem("banner");
+			totem = getRegisteredItem("totem");
+			end_crystal = getRegisteredItem("end_crystal");
+			mace = getRegisteredItem("mace");
+			netherite_helmet = getRegisteredItem("netherite_helmet");
+			netherite_chestplate = getRegisteredItem("netherite_chestplate");
+			netherite_leggings = getRegisteredItem("netherite_leggings");
+			netherite_boots = getRegisteredItem("netherite_boots");
+			netherite_sword = getRegisteredItem("netherite_sword");
+			netherite_shovel = getRegisteredItem("netherite_shovel");
+			netherite_pickaxe = getRegisteredItem("netherite_pickaxe");
+			netherite_axe = getRegisteredItem("netherite_axe");
+			netherite_hoe = getRegisteredItem("netherite_hoe");
+			netherite_ingot = getRegisteredItem("netherite_ingot");
+			elytra = getRegisteredItem("elytra");
 		}
 	}
 }

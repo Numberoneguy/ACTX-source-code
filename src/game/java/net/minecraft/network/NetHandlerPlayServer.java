@@ -1,6 +1,7 @@
 package net.minecraft.network;
 
 import net.minecraft.actx.data_o_algo.actxmiscdata;
+import net.minecraft.actx.server.actxcompat;
 import com.carrotsearch.hppc.IntShortHashMap;
 import com.carrotsearch.hppc.IntShortMap;
 import com.google.common.collect.Lists;
@@ -382,7 +383,7 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 							+ this.playerEntity.motionY * this.playerEntity.motionY
 							+ this.playerEntity.motionZ * this.playerEntity.motionZ;
 					double d15 = d11 * d11 + d12 * d12 + d13 * d13;
-					if (d15 - d14 > 100.0D && (!this.serverController.isSinglePlayer()
+					if (d15 - d14 > (this.playerEntity.isElytraFlying() ? 300.0D : 100.0D) && (!this.serverController.isSinglePlayer()
 							|| !this.serverController.getServerOwner().equals(this.playerEntity.getName()))) {
 						logger.warn(this.playerEntity.getName() + " moved too quickly! " + d11 + "," + d12 + "," + d13
 								+ " (" + d11 + ", " + d12 + ", " + d13 + ")");
@@ -431,7 +432,7 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 					AxisAlignedBB axisalignedbb = this.playerEntity.getEntityBoundingBox()
 							.expand((double) f3, (double) f3, (double) f3).addCoord(0.0D, -0.55D, 0.0D);
 					if (!this.serverController.isFlightAllowed() && !this.playerEntity.capabilities.allowFlying
-							&& !worldserver.checkBlockCollision(axisalignedbb)) {
+							&& !this.playerEntity.isElytraFlying() && !worldserver.checkBlockCollision(axisalignedbb)) {
 						if (d12 >= -0.03125D) {
 							++this.floatingTickCount;
 							if (this.floatingTickCount > 80) {
@@ -621,8 +622,8 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 					this.playerEntity.inventory.currentItem);
 			this.playerEntity.openContainer.detectAndSendChanges();
 			this.playerEntity.isChangingQuantityOnly = false;
-			if (!ItemStack.areItemStacksEqual(this.playerEntity.inventory.getCurrentItem(),
-					c08packetplayerblockplacement.getStack())) {
+			if (!ItemStack.areItemStacksEqual(actxcompat.stackForClient(this.playerEntity.inventory.getCurrentItem(),
+					actxcompat.isActxClient(this.playerEntity)), c08packetplayerblockplacement.getStack())) {
 				this.sendPacket(new S2FPacketSetSlot(this.playerEntity.openContainer.windowId, slot.slotNumber,
 						this.playerEntity.inventory.getCurrentItem()));
 			}
@@ -705,7 +706,8 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 		}
 	}
 
-	public void sendPacket(final Packet packetIn) {
+	public void sendPacket(final Packet originalPacket) {
+		final Packet packetIn = actxcompat.filterPacket(this.playerEntity, originalPacket);
 		if (packetIn instanceof S02PacketChat) {
 			S02PacketChat s02packetchat = (S02PacketChat) packetIn;
 			EntityPlayer.EnumChatVisibility entityplayer$enumchatvisibility = this.playerEntity.getChatVisibility();
@@ -935,6 +937,18 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 				((EntityHorse) this.playerEntity.ridingEntity).openGUI(this.playerEntity);
 			}
 			break;
+		case START_FALL_FLYING:
+			if (!this.playerEntity.onGround && this.playerEntity.motionY < 0.0D && !this.playerEntity.isElytraFlying()
+					&& !this.playerEntity.isInWater()) {
+				net.minecraft.item.ItemStack elytraStack = this.playerEntity.getEquipmentInSlot(3);
+				if (elytraStack != null && elytraStack.getItem() instanceof net.minecraft.item.ItemElytra
+						&& net.minecraft.item.ItemElytra.isUsable(elytraStack)) {
+					this.playerEntity.setElytraFlying();
+				}
+			} else {
+				this.playerEntity.clearElytraFlying();
+			}
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid client command!");
 		}
@@ -1048,7 +1062,8 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 			} else {
 				ItemStack itemstack = this.playerEntity.openContainer.slotClick(c0epacketclickwindow.getSlotId(),
 						c0epacketclickwindow.getUsedButton(), c0epacketclickwindow.getMode(), this.playerEntity);
-				if (ItemStack.areItemStacksEqual(c0epacketclickwindow.getClickedItem(), itemstack)) {
+				if (ItemStack.areItemStacksEqual(c0epacketclickwindow.getClickedItem(),
+						actxcompat.stackForClient(itemstack, actxcompat.isActxClient(this.playerEntity)))) {
 					this.playerEntity.playerNetServerHandler.sendPacket(new S32PacketConfirmTransaction(
 							c0epacketclickwindow.getWindowId(), c0epacketclickwindow.getActionNumber(), true));
 					this.playerEntity.isChangingQuantityOnly = true;
@@ -1095,7 +1110,7 @@ public class NetHandlerPlayServer implements INetHandlerPlayServer, ITickable {
 	public void processCreativeInventoryAction(C10PacketCreativeInventoryAction c10packetcreativeinventoryaction) {
 		if (this.playerEntity.theItemInWorldManager.isCreative()) {
 			boolean flag = c10packetcreativeinventoryaction.getSlotId() < 0;
-			ItemStack itemstack = c10packetcreativeinventoryaction.getStack();
+			ItemStack itemstack = actxcompat.restoreStack(c10packetcreativeinventoryaction.getStack());
 			if (itemstack != null && itemstack.hasTagCompound()
 					&& itemstack.getTagCompound().hasKey("BlockEntityTag", 10)) {
 				NBTTagCompound nbttagcompound = itemstack.getTagCompound().getCompoundTag("BlockEntityTag");

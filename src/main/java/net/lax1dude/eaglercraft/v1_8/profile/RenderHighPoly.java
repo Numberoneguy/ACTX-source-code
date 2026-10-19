@@ -137,10 +137,10 @@ public class RenderHighPoly extends RenderPlayer {
 					float zd = (float)(abstractclientplayer.posZ - abstractclientplayer.prevPosZ);
 					GlStateManager.rotate(-zd * 40.0f * var15, 1.0f, 0.0f, 0.0f);
 					GlStateManager.rotate(f3, 0.0f, 1.0f, 0.0f);
-				}else if(highPolySkin == HighPolySkin.BABY_WINSTON) {
+				} else if (highPolySkin == HighPolySkin.BABY_WINSTON || highPolySkin == HighPolySkin.bigboned) {
 					GlStateManager.translate(0.0f, (MathHelper.cos(f10 % 100000.0f) + 1.0f) * var15 * 0.2f, 0.0f);
 					GlStateManager.rotate(MathHelper.sin(var16) * 5f * var15, 0.0f, 1.0f, 0.0f);
-					GlStateManager.rotate(MathHelper.cos(var16) * 5f * var15, 0.0f, 0.0f, 1.0f);
+					GlStateManager.rotate(MathHelper.cos(var16) * 5f * var15, 0.0f, 0.0f, 1.0F);
 				}
 				
 				if (abstractclientplayer.hurtTime > 0 || abstractclientplayer.deathTime > 0) {

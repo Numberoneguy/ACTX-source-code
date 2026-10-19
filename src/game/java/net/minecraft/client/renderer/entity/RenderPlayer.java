@@ -12,11 +12,14 @@ import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
 import net.minecraft.client.renderer.entity.layers.LayerCape;
 import net.minecraft.client.renderer.entity.layers.LayerCustomHead;
 import net.minecraft.client.renderer.entity.layers.LayerDeadmau5Head;
+import net.minecraft.client.renderer.entity.layers.LayerElytra;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Vec3;
 
 public class RenderPlayer extends RendererLivingEntity<AbstractClientPlayer> {
     private boolean smallArms;
@@ -36,6 +39,7 @@ public class RenderPlayer extends RendererLivingEntity<AbstractClientPlayer> {
         this.addLayer(new LayerDeadmau5Head(this));
         this.addLayer(new LayerCape(this));
         this.addLayer(new LayerCustomHead(this.getMainModel().bipedHead));
+        this.addLayer(new LayerElytra(this));
     }
 
     protected RenderPlayer(RenderManager renderManager, ModelBase modelBase, float size) {
@@ -156,6 +160,22 @@ public class RenderPlayer extends RendererLivingEntity<AbstractClientPlayer> {
             GlStateManager.rotate(abstractclientplayer.getBedOrientationInDegrees(), 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(this.getDeathMaxRotation(abstractclientplayer), 0.0F, 0.0F, 1.0F);
             GlStateManager.rotate(270.0F, 0.0F, 1.0F, 0.0F);
+        } else if (abstractclientplayer.isElytraFlying()) {
+            super.rotateCorpse(abstractclientplayer, f, f1, f2);
+            float f3 = (float) abstractclientplayer.getTicksElytraFlying() + f2;
+            float f4 = MathHelper.clamp_float(f3 * f3 / 100.0F, 0.0F, 1.0F);
+            GlStateManager.rotate(f4 * (-90.0F - abstractclientplayer.rotationPitch), 1.0F, 0.0F, 0.0F);
+            Vec3 vec3 = abstractclientplayer.getLook(f2);
+            double d0 = abstractclientplayer.motionX * abstractclientplayer.motionX
+                    + abstractclientplayer.motionZ * abstractclientplayer.motionZ;
+            double d1 = vec3.xCoord * vec3.xCoord + vec3.zCoord * vec3.zCoord;
+            if (d0 > 0.0D && d1 > 0.0D) {
+                double d2 = (abstractclientplayer.motionX * vec3.xCoord + abstractclientplayer.motionZ * vec3.zCoord)
+                        / (Math.sqrt(d0) * Math.sqrt(d1));
+                double d3 = abstractclientplayer.motionX * vec3.zCoord - abstractclientplayer.motionZ * vec3.xCoord;
+                GlStateManager.rotate((float) (Math.signum(d3) * Math.acos(d2)) * 180.0F / (float) Math.PI, 0.0F,
+                        1.0F, 0.0F);
+            }
         } else {
             super.rotateCorpse(abstractclientplayer, f, f1, f2);
         }

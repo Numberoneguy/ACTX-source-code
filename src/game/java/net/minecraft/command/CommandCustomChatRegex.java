@@ -23,7 +23,7 @@ public class CommandCustomChatRegex extends CommandBase {
     private static final int pp_page = 5;
     private static final int pp_count =
             (placekeys.length + pp_page - 1) / pp_page;
-    private static final int total_pages4_help = pp_count + 1; // +1 = final usage/example/current page
+    private static final int total_pages4_help = pp_count + 1;
 
     @Override
     public String getCommandName() {

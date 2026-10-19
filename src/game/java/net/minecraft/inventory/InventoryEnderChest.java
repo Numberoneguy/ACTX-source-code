@@ -27,25 +27,64 @@ import net.minecraft.tileentity.TileEntityEnderChest;
  * 
  */
 public class InventoryEnderChest extends InventoryBasic {
+	private static final int MAX_SLOTS = 54;
 	private TileEntityEnderChest associatedChest;
+	private int capacity = 1;
 
 	public InventoryEnderChest() {
-		super("container.enderchest", false, 27);
+		super("container.enderchest", false, MAX_SLOTS);
+	}
+
+	public int getSizeInventory() {
+		return this.capacity * 27;
+	}
+
+	public ItemStack func_174894_a(ItemStack stack) {
+		ItemStack itemstack = stack.copy();
+
+		for (int i = 0; i < this.getSizeInventory(); ++i) {
+			ItemStack itemstack1 = this.getStackInSlot(i);
+			if (itemstack1 == null) {
+				this.setInventorySlotContents(i, itemstack);
+				this.markDirty();
+				return null;
+			}
+
+			if (ItemStack.areItemsEqual(itemstack1, itemstack)) {
+				int j = Math.min(this.getInventoryStackLimit(), itemstack1.getMaxStackSize());
+				int k = Math.min(itemstack.stackSize, j - itemstack1.stackSize);
+				if (k > 0) {
+					itemstack1.stackSize += k;
+					itemstack.stackSize -= k;
+					if (itemstack.stackSize <= 0) {
+						this.markDirty();
+						return null;
+					}
+				}
+			}
+		}
+
+		if (itemstack.stackSize != stack.stackSize) {
+			this.markDirty();
+		}
+
+		return itemstack;
 	}
 
 	public void setChestTileEntity(TileEntityEnderChest chestTileEntity) {
 		this.associatedChest = chestTileEntity;
+		this.capacity = chestTileEntity != null ? chestTileEntity.getCapacity() : 1;
 	}
 
 	public void loadInventoryFromNBT(NBTTagList parNBTTagList) {
-		for (int i = 0; i < this.getSizeInventory(); ++i) {
+		for (int i = 0; i < MAX_SLOTS; ++i) {
 			this.setInventorySlotContents(i, (ItemStack) null);
 		}
 
 		for (int k = 0; k < parNBTTagList.tagCount(); ++k) {
 			NBTTagCompound nbttagcompound = parNBTTagList.getCompoundTagAt(k);
 			int j = nbttagcompound.getByte("Slot") & 255;
-			if (j >= 0 && j < this.getSizeInventory()) {
+			if (j >= 0 && j < MAX_SLOTS) {
 				this.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
 			}
 		}
@@ -55,7 +94,7 @@ public class InventoryEnderChest extends InventoryBasic {
 	public NBTTagList saveInventoryToNBT() {
 		NBTTagList nbttaglist = new NBTTagList();
 
-		for (int i = 0; i < this.getSizeInventory(); ++i) {
+		for (int i = 0; i < MAX_SLOTS; ++i) {
 			ItemStack itemstack = this.getStackInSlot(i);
 			if (itemstack != null) {
 				NBTTagCompound nbttagcompound = new NBTTagCompound();
@@ -92,5 +131,6 @@ public class InventoryEnderChest extends InventoryBasic {
 
 		super.closeInventory(entityplayer);
 		this.associatedChest = null;
+		this.capacity = 1;
 	}
 }

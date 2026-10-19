@@ -51,7 +51,6 @@ public class GameRules {
 		this.addGameRule("colorCodes", "true", GameRules.ValueType.BOOLEAN_VALUE);
 		this.addGameRule("doSignEditing", "true", GameRules.ValueType.BOOLEAN_VALUE);
 		this.addGameRule("doWeatherCycle", "true", GameRules.ValueType.BOOLEAN_VALUE);
-		this.addGameRule("WorldEdit", "false", GameRules.ValueType.BOOLEAN_VALUE);
 		this.addGameRule("doImmediateRespawn", "false", GameRules.ValueType.BOOLEAN_VALUE);
 		this.addGameRule("announceAdvancements", "true", GameRules.ValueType.BOOLEAN_VALUE);
 		this.addGameRule("pvp", "true", GameRules.ValueType.BOOLEAN_VALUE);

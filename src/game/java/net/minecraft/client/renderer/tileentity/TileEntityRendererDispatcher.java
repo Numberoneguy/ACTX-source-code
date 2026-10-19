@@ -8,6 +8,7 @@ import net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager;
 import net.lax1dude.eaglercraft.v1_8.opengl.OpenGlHelper;
 import net.lax1dude.eaglercraft.v1_8.opengl.ext.dynamiclights.DynamicLightsStateManager;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.model.ModelShulker;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -22,6 +23,7 @@ import net.minecraft.tileentity.TileEntityEnderChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.tileentity.TileEntityPiston;
 import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.tileentity.TileEntityShulkerBox;
 import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ReportedException;
@@ -75,6 +77,7 @@ public class TileEntityRendererDispatcher {
 		this.mapSpecialRenderers.put(TileEntityBeacon.class, new TileEntityBeaconRenderer());
 		this.mapSpecialRenderers.put(TileEntitySkull.class, new TileEntitySkullRenderer());
 		this.mapSpecialRenderers.put(TileEntityBanner.class, new TileEntityBannerRenderer());
+		this.mapSpecialRenderers.put(TileEntityShulkerBox.class, new TileEntityShulkerBoxRenderer(new ModelShulker()));
 
 		for (TileEntitySpecialRenderer tileentityspecialrenderer : this.mapSpecialRenderers.values()) {
 			tileentityspecialrenderer.setRendererDispatcher(this);

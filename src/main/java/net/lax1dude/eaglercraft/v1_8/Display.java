@@ -110,6 +110,14 @@ public class Display {
 		PlatformInput.toggleFullscreen();
 	}
 
+	public static void setResolutionScale(float scale) {
+		PlatformInput.setResolutionScale(scale);
+	}
+
+	public static float getResolutionScale() {
+		return PlatformInput.getResolutionScale();
+	}
+
 	public static float getDPI() {
 		long millis = EagRuntime.steadyTimeMillis();
 		if(millis - lastDPIUpdate > 250l) {

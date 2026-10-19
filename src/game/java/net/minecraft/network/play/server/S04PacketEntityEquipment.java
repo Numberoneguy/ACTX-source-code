@@ -3,6 +3,7 @@ package net.minecraft.network.play.server;
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -64,6 +65,17 @@ public class S04PacketEntityEquipment implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleEntityEquipment(this);
+	}
+
+	public S04PacketEntityEquipment actxVanillaCopy() {
+		if (this.itemStack == null || !actxcompat.isCustomItem(this.itemStack.getItem())) {
+			return this;
+		}
+		S04PacketEntityEquipment copy = new S04PacketEntityEquipment();
+		copy.entityID = this.entityID;
+		copy.equipmentSlot = this.equipmentSlot;
+		copy.itemStack = actxcompat.stackForClient(this.itemStack, false);
+		return copy;
 	}
 
 	public ItemStack getItemStack() {

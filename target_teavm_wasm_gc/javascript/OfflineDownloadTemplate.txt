@@ -23,7 +23,7 @@ window.eaglercraftXOpts = {
         { addr: "wss://relay.deev.is", comment: "lax1dude relay #1", primary: false },
         { addr: "wss://relay.lax1dude.net", comment: "lax1dude relay #2", primary: false },
         { addr: "wss://relay.shhnowisnottheti.me", comment: "ayunami relay #1", primary: false },
-        { addr: "wss://colour-devel-porcelain-topic.trycloudflare.com", comment: "NOSEISA's Public LAN", primary: false}
+        { addr: "wss://relay.mcjs.link", comment: "MCJS relay", primary: false}
     ]
 };
 </script>
@@ -52,7 +52,7 @@ window.eaglerTranslate = function(text, targetLang) {
         })
         .catch(function(err) {
             console.warn("[ActTranslate] fetch failed:", err);
-            // niggerrrr
+            // what
         });
 };
 </script>

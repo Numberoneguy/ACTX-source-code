@@ -14,7 +14,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.server.CommandBlockLogic;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentDensity;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentWindBurst;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -45,6 +48,7 @@ import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemMace;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -236,6 +240,7 @@ public abstract class EntityPlayer extends EntityLivingBase implements ICommandS
 	 * Called to update the entity's position/logic.*
      */
     public void onUpdate() {
+        this.updateElytraSize();
         this.noClip = this.isSpectator();
         if (this.isSpectator()) {
             this.onGround = false;
@@ -1130,6 +1135,16 @@ public void attackTargetEntityWithCurrentItem(Entity entity) {
 					}
 
 					f = f + f1;
+					ItemStack maceStack = this.getHeldItem();
+					boolean smash = maceStack != null && maceStack.getItem() instanceof ItemMace && this.fallDistance > 1.5F
+							&& !this.capabilities.isFlying && entity instanceof EntityLivingBase;
+					if (smash) {
+						float fd = this.fallDistance;
+						float smashBonus = fd <= 3.0F ? 4.0F * fd : (fd <= 8.0F ? 12.0F + 2.0F * (fd - 3.0F) : 22.0F + (fd - 8.0F));
+						smashBonus += EnchantmentDensity.getBonusDamage(
+								EnchantmentHelper.getEnchantmentLevel(Enchantment.density.effectId, maceStack), fd);
+						f += smashBonus;
+					}
 					boolean flag1 = false;
 					int j = EnchantmentHelper.getFireAspectModifier(this);
 					if (entity instanceof EntityLivingBase && j > 0 && !entity.isBurning()) {
@@ -1142,6 +1157,18 @@ public void attackTargetEntityWithCurrentItem(Entity entity) {
 					double d2 = entity.motionZ;
 					boolean flag2 = entity.attackEntityFrom(DamageSource.causePlayerDamage(this), f);
 					if (flag2) {
+						if (smash) {
+							this.fallDistance = 0.0F;
+							int burst = EnchantmentHelper.getEnchantmentLevel(Enchantment.windBurst.effectId, maceStack);
+							if (burst > 0) {
+								this.motionY = (double) EnchantmentWindBurst.getLaunchVelocity(burst);
+								this.burstFallCredit = EnchantmentWindBurst.getLaunchHeight(burst);
+								if (this instanceof EntityPlayerMP) {
+									((EntityPlayerMP) this).playerNetServerHandler.sendPacket(new S12PacketEntityVelocity(this));
+								}
+							}
+						}
+
 						if (i > 0) {
 							entity.addVelocity(
 									(double) (-MathHelper.sin(this.rotationYaw * 3.1415927F / 180.0F) * (float) i
@@ -1606,7 +1633,17 @@ public void attackTargetEntityWithCurrentItem(Entity entity) {
 
 	}
 
+	public float burstFallCredit;
+
 	public void fall(float f, float f1) {
+		if (this.burstFallCredit > 0.0F) {
+			f -= this.burstFallCredit;
+			this.burstFallCredit = 0.0F;
+			if (f <= 0.0F) {
+				return;
+			}
+		}
+
 		if (!this.capabilities.allowFlying) {
 			if (f >= 2.0F) {
 				this.addStat(StatList.distanceFallenStat, (int) Math.round((double) f * 100.0D));
@@ -1951,10 +1988,28 @@ public void attackTargetEntityWithCurrentItem(Entity entity) {
 		return chatcomponenttext;
 	}
 
+	protected void updateElytraSize() {
+		if (this.isPlayerSleeping()) {
+			return;
+		}
+
+		float f1 = this.isElytraFlying() ? 0.6F : 1.8F;
+		if (this.height != f1) {
+			AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
+			axisalignedbb = new AxisAlignedBB(axisalignedbb.minX, axisalignedbb.minY, axisalignedbb.minZ,
+					axisalignedbb.minX + 0.6D, axisalignedbb.minY + (double) f1, axisalignedbb.minZ + 0.6D);
+			if (this.worldObj.getCollidingBoundingBoxes(this, axisalignedbb).isEmpty()) {
+				this.setSize(0.6F, f1);
+			}
+		}
+	}
+
 	public float getEyeHeight() {
 		float f = 1.62F;
 		if (this.isPlayerSleeping()) {
 			f = 0.2F;
+		} else if (this.isElytraFlying() && !this.isSneaking()) {
+			f = 0.4F;
 		}
 
 		if (this.isSneaking()) {

@@ -219,6 +219,7 @@ public class PacketBuffer extends ByteBuf {
 	 * damage. (short)
 	 */
 	public void writeItemStackToBuffer(ItemStack stack) {
+		stack = net.minecraft.actx.server.actxviaitemfix.prepareForServer(stack);
 		if (stack == null) {
 			this.writeShort(-1);
 		} else {
@@ -248,7 +249,7 @@ public class PacketBuffer extends ByteBuf {
 			itemstack.setTagCompound(this.readNBTTagCompoundFromBuffer());
 		}
 
-		return itemstack;
+		return net.minecraft.actx.server.actxviaitemfix.restore(itemstack);
 	}
 
 	/**+

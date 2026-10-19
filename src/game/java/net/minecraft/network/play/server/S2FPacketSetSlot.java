@@ -3,6 +3,7 @@ package net.minecraft.network.play.server;
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -64,6 +65,17 @@ public class S2FPacketSetSlot implements Packet<INetHandlerPlayClient> {
 		parPacketBuffer.writeByte(this.windowId);
 		parPacketBuffer.writeShort(this.slot);
 		parPacketBuffer.writeItemStackToBuffer(this.item);
+	}
+
+	public S2FPacketSetSlot actxVanillaCopy() {
+		if (this.item == null || !actxcompat.isCustomItem(this.item.getItem())) {
+			return this;
+		}
+		S2FPacketSetSlot copy = new S2FPacketSetSlot();
+		copy.windowId = this.windowId;
+		copy.slot = this.slot;
+		copy.item = actxcompat.stackForClient(this.item, false);
+		return copy;
 	}
 
 	public int func_149175_c() {

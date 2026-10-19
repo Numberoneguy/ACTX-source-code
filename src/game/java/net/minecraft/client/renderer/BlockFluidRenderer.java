@@ -14,6 +14,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.biome.BiomeGenBase;
 
 /**+
  * This portion of EaglercraftX contains deobfuscated Minecraft 1.8 source code.
@@ -59,9 +60,13 @@ public class BlockFluidRenderer {
 		BlockLiquid blockliquid = (BlockLiquid) blockStateIn.getBlock();
 		boolean lava = blockliquid.getMaterial() == Material.lava;
 		boolean realistic = !lava && DeferredStateManager.isRenderingRealisticWater();
+		float alpha = !lava && Minecraft.getMinecraft().gameSettings.clearWaterOF ? 0.5F : 1.0F;
 		blockliquid.setBlockBoundsBasedOnState(blockAccess, blockPosIn);
 		EaglerTextureAtlasSprite[] atextureatlassprite = lava ? this.atlasSpritesLava : this.atlasSpritesWater;
 		int i = blockliquid.colorMultiplier(blockAccess, blockPosIn);
+		if (!lava && !Minecraft.getMinecraft().gameSettings.swampColorsOF) {
+			i = this.getWaterColorNoSwamp(blockAccess, blockPosIn);
+		}
 		float f = (float) (i >> 16 & 255) / 255.0F;
 		float f1 = (float) (i >> 8 & 255) / 255.0F;
 		float f2 = (float) (i & 255) / 255.0F;
@@ -144,26 +149,26 @@ public class BlockFluidRenderer {
 				float f24 = f4 * f;
 				float f25 = f4 * f1;
 				float f26 = f4 * f2;
-				worldRendererIn.pos(d0 + 0.0D, d1 + (double) f7, d2 + 0.0D).color(f24, f25, f26, 1.0F)
+				worldRendererIn.pos(d0 + 0.0D, d1 + (double) f7, d2 + 0.0D).color(f24, f25, f26, alpha)
 						.tex((double) f13, (double) f17).lightmap(l2, i3).endVertex();
-				worldRendererIn.pos(d0 + 0.0D, d1 + (double) f8, d2 + 1.0D).color(f24, f25, f26, 1.0F)
+				worldRendererIn.pos(d0 + 0.0D, d1 + (double) f8, d2 + 1.0D).color(f24, f25, f26, alpha)
 						.tex((double) f14, (double) f18).lightmap(l2, i3).endVertex();
-				worldRendererIn.pos(d0 + 1.0D, d1 + (double) f9, d2 + 1.0D).color(f24, f25, f26, 1.0F)
+				worldRendererIn.pos(d0 + 1.0D, d1 + (double) f9, d2 + 1.0D).color(f24, f25, f26, alpha)
 						.tex((double) f15, (double) f19).lightmap(l2, i3).endVertex();
-				worldRendererIn.pos(d0 + 1.0D, d1 + (double) f10, d2 + 0.0D).color(f24, f25, f26, 1.0F)
+				worldRendererIn.pos(d0 + 1.0D, d1 + (double) f10, d2 + 0.0D).color(f24, f25, f26, alpha)
 						.tex((double) f16, (double) f20).lightmap(l2, i3).endVertex();
 				if (isDynamicLights)
 					worldRendererIn.genNormals(true, f12 <= -999.0F ? BlockVertexIDs.builtin_water_still_vertex_id
 							: BlockVertexIDs.builtin_water_flow_vertex_id);
 
 				if (blockliquid.func_176364_g(blockAccess, blockPosIn.up(tmp))) {
-					worldRendererIn.pos(d0 + 0.0D, d1 + (double) f7, d2 + 0.0D).color(f24, f25, f26, 1.0F)
+					worldRendererIn.pos(d0 + 0.0D, d1 + (double) f7, d2 + 0.0D).color(f24, f25, f26, alpha)
 							.tex((double) f13, (double) f17).lightmap(l2, i3).endVertex();
-					worldRendererIn.pos(d0 + 1.0D, d1 + (double) f10, d2 + 0.0D).color(f24, f25, f26, 1.0F)
+					worldRendererIn.pos(d0 + 1.0D, d1 + (double) f10, d2 + 0.0D).color(f24, f25, f26, alpha)
 							.tex((double) f16, (double) f20).lightmap(l2, i3).endVertex();
-					worldRendererIn.pos(d0 + 1.0D, d1 + (double) f9, d2 + 1.0D).color(f24, f25, f26, 1.0F)
+					worldRendererIn.pos(d0 + 1.0D, d1 + (double) f9, d2 + 1.0D).color(f24, f25, f26, alpha)
 							.tex((double) f15, (double) f19).lightmap(l2, i3).endVertex();
-					worldRendererIn.pos(d0 + 0.0D, d1 + (double) f8, d2 + 1.0D).color(f24, f25, f26, 1.0F)
+					worldRendererIn.pos(d0 + 0.0D, d1 + (double) f8, d2 + 1.0D).color(f24, f25, f26, alpha)
 							.tex((double) f14, (double) f18).lightmap(l2, i3).endVertex();
 					if (isDynamicLights)
 						worldRendererIn.genNormals(true, f12 <= -999.0F ? BlockVertexIDs.builtin_water_still_vertex_id
@@ -179,13 +184,13 @@ public class BlockFluidRenderer {
 				int l1 = blockliquid.getMixedBrightnessForBlock(blockAccess, blockPosIn.down(tmp));
 				int i2 = l1 >> 16 & '\uffff';
 				int j2 = l1 & '\uffff';
-				worldRendererIn.pos(d0, d1, d2 + 1.0D).color(f3, f3, f3, 1.0F).tex((double) f35, (double) f38)
+				worldRendererIn.pos(d0, d1, d2 + 1.0D).color(f3, f3, f3, alpha).tex((double) f35, (double) f38)
 						.lightmap(i2, j2).endVertex();
-				worldRendererIn.pos(d0, d1, d2).color(f3, f3, f3, 1.0F).tex((double) f35, (double) f37).lightmap(i2, j2)
+				worldRendererIn.pos(d0, d1, d2).color(f3, f3, f3, alpha).tex((double) f35, (double) f37).lightmap(i2, j2)
 						.endVertex();
-				worldRendererIn.pos(d0 + 1.0D, d1, d2).color(f3, f3, f3, 1.0F).tex((double) f36, (double) f37)
+				worldRendererIn.pos(d0 + 1.0D, d1, d2).color(f3, f3, f3, alpha).tex((double) f36, (double) f37)
 						.lightmap(i2, j2).endVertex();
-				worldRendererIn.pos(d0 + 1.0D, d1, d2 + 1.0D).color(f3, f3, f3, 1.0F).tex((double) f36, (double) f38)
+				worldRendererIn.pos(d0 + 1.0D, d1, d2 + 1.0D).color(f3, f3, f3, alpha).tex((double) f36, (double) f38)
 						.lightmap(i2, j2).endVertex();
 				if (isDynamicLights)
 					worldRendererIn.putNormal(0.0f, -1.0f, 0.0f, BlockVertexIDs.builtin_water_still_vertex_id);
@@ -265,24 +270,24 @@ public class BlockFluidRenderer {
 					float f32 = f4 * f31 * f;
 					float f33 = f4 * f31 * f1;
 					float f34 = f4 * f31 * f2;
-					worldRendererIn.pos(d3, d1 + (double) f39, d4).color(f32, f33, f34, 1.0F)
+					worldRendererIn.pos(d3, d1 + (double) f39, d4).color(f32, f33, f34, alpha)
 							.tex((double) f41, (double) f28).lightmap(k, l).endVertex();
-					worldRendererIn.pos(d5, d1 + (double) f40, d6).color(f32, f33, f34, 1.0F)
+					worldRendererIn.pos(d5, d1 + (double) f40, d6).color(f32, f33, f34, alpha)
 							.tex((double) f27, (double) f29).lightmap(k, l).endVertex();
-					worldRendererIn.pos(d5, d1 + 0.0D, d6).color(f32, f33, f34, 1.0F).tex((double) f27, (double) f30)
+					worldRendererIn.pos(d5, d1 + 0.0D, d6).color(f32, f33, f34, alpha).tex((double) f27, (double) f30)
 							.lightmap(k, l).endVertex();
-					worldRendererIn.pos(d3, d1 + 0.0D, d4).color(f32, f33, f34, 1.0F).tex((double) f41, (double) f30)
+					worldRendererIn.pos(d3, d1 + 0.0D, d4).color(f32, f33, f34, alpha).tex((double) f41, (double) f30)
 							.lightmap(k, l).endVertex();
 					if (isDynamicLights)
 						worldRendererIn.putNormal(j1, 0.0f, k1, BlockVertexIDs.builtin_water_flow_vertex_id);
 					if (!realistic) {
-						worldRendererIn.pos(d3, d1 + 0.0D, d4).color(f32, f33, f34, 1.0F)
+						worldRendererIn.pos(d3, d1 + 0.0D, d4).color(f32, f33, f34, alpha)
 								.tex((double) f41, (double) f30).lightmap(k, l).endVertex();
-						worldRendererIn.pos(d5, d1 + 0.0D, d6).color(f32, f33, f34, 1.0F)
+						worldRendererIn.pos(d5, d1 + 0.0D, d6).color(f32, f33, f34, alpha)
 								.tex((double) f27, (double) f30).lightmap(k, l).endVertex();
-						worldRendererIn.pos(d5, d1 + (double) f40, d6).color(f32, f33, f34, 1.0F)
+						worldRendererIn.pos(d5, d1 + (double) f40, d6).color(f32, f33, f34, alpha)
 								.tex((double) f27, (double) f29).lightmap(k, l).endVertex();
-						worldRendererIn.pos(d3, d1 + (double) f39, d4).color(f32, f33, f34, 1.0F)
+						worldRendererIn.pos(d3, d1 + (double) f39, d4).color(f32, f33, f34, alpha)
 								.tex((double) f41, (double) f28).lightmap(k, l).endVertex();
 						if (isDynamicLights)
 							worldRendererIn.putNormal(-j1, 0.0f, -k1, BlockVertexIDs.builtin_water_flow_vertex_id);
@@ -292,6 +297,26 @@ public class BlockFluidRenderer {
 
 			return flag2;
 		}
+	}
+
+	private int getWaterColorNoSwamp(IBlockAccess blockAccess, BlockPos pos) {
+		int swampId = BiomeGenBase.swampland.biomeID;
+		int rad = Minecraft.getMinecraft().gameSettings.smoothBiomesOF ? 1 : 0;
+		int n = (2 * rad + 1) * (2 * rad + 1);
+		int r = 0;
+		int g = 0;
+		int b = 0;
+		for (int dx = -rad; dx <= rad; ++dx) {
+			for (int dz = -rad; dz <= rad; ++dz) {
+				BiomeGenBase biome = blockAccess.getBiomeGenForCoords(pos.add(dx, 0, dz));
+				int c = (biome.biomeID == swampId || biome.biomeID == swampId + 128) ? 16777215
+						: biome.waterColorMultiplier;
+				r += c >> 16 & 255;
+				g += c >> 8 & 255;
+				b += c & 255;
+			}
+		}
+		return (r / n & 255) << 16 | (g / n & 255) << 8 | (b / n & 255);
 	}
 
 	private float getFluidHeight(IBlockAccess blockAccess, BlockPos blockPosIn, Material blockMaterial) {

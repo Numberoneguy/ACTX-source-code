@@ -73,7 +73,7 @@ public class EaglerCloudRenderer {
 		int newState;
 		Entity rve = this.mc.getRenderViewEntity();
 		float f = (float) (rve.lastTickPosY + (rve.posY - rve.lastTickPosY) * (double) partialTicks);
-		float f3 = this.mc.theWorld.provider.getCloudHeight() - f + 0.33F;
+		float f3 = this.mc.gameSettings.getCloudYOF() - f + 0.33F;
 		if(c == 2) {
 			if (f3 > -5.0F) {
 				if (f3 <= 5.0F) {

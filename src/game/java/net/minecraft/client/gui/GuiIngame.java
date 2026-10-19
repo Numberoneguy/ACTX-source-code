@@ -300,6 +300,7 @@ public class GuiIngame extends Gui {
 			GlStateManager.tryBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, 1, 0);
 			GlStateManager.enableAlpha();
 			this.drawTexturedModalRect(scaledResWidth / 2 - 7, scaledResHeight / 2 - 7, 0, 0, 16, 16);
+			net.minecraft.actx.server.actxcooldown.renderCrosshair(this, scaledResWidth, scaledResHeight);
 		}
 	}
 
@@ -346,6 +347,7 @@ public class GuiIngame extends Gui {
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.disableRescaleNormal();
 			GlStateManager.disableBlend();
+			net.minecraft.actx.server.actxcooldown.renderHotbar(this, sr);
 		}
 	}
 

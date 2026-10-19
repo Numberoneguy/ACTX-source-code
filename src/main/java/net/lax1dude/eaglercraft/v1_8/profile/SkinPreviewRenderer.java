@@ -64,6 +64,7 @@ public class SkinPreviewRenderer {
 		case LAXATIVE_DUDE:
 		case BABY_CHARLES:
 		case BABY_WINSTON:
+		case bigboned:
 			if(skinModel.highPoly != null && Minecraft.getMinecraft().gameSettings.enableFNAWSkins) {
 				renderHighPoly(x, y, mx, my, skinModel.highPoly);
 				return;

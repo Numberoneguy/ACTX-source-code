@@ -22,6 +22,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
 /**+
  * This portion of EaglercraftX contains deobfuscated Minecraft 1.8 source code.
@@ -635,9 +636,22 @@ public abstract class CommandBase implements ICommand {
 	public static void notifyOperators(ICommandSender sender, ICommand command, int msgFormat, String msgParams,
 			Object... parArrayOfObject) {
 		if (theAdmin != null) {
-			theAdmin.notifyOperators(sender, command, msgFormat, msgParams, parArrayOfObject);
+			theAdmin.notifyOperators(sender, command, msgFormat, resolveFormat(msgParams), parArrayOfObject);
 		}
 
+	}
+
+	/**
+	 * Translates the message on the server so clients without the lang key
+	 * don't see it raw. Optional inline fallback: "lang.key|Fallback text %s".
+	 */
+	public static String resolveFormat(String format) {
+		int bar = format.indexOf('|');
+		String key = bar >= 0 ? format.substring(0, bar) : format;
+		if (StatCollector.canTranslate(key)) {
+			return StatCollector.translateToLocal(key);
+		}
+		return bar >= 0 && bar + 1 < format.length() ? format.substring(bar + 1) : key;
 	}
 
 	/**+

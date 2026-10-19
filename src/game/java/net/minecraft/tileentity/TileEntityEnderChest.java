@@ -2,6 +2,7 @@ package net.minecraft.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 
 /**+
@@ -29,6 +30,26 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
 	public float prevLidAngle;
 	public int numPlayersUsing;
 	private int ticksSinceSync;
+	private int capacity = 1;
+
+	public int getCapacity() {
+		return this.capacity;
+	}
+
+	public void setCapacity(int newCapacity) {
+		this.capacity = newCapacity >= 2 ? 2 : 1;
+		this.markDirty();
+	}
+
+	public void readFromNBT(NBTTagCompound nbttagcompound) {
+		super.readFromNBT(nbttagcompound);
+		this.capacity = nbttagcompound.getInteger("Capacity") >= 2 ? 2 : 1;
+	}
+
+	public void writeToNBT(NBTTagCompound nbttagcompound) {
+		super.writeToNBT(nbttagcompound);
+		nbttagcompound.setInteger("Capacity", this.capacity);
+	}
 
 	/**+
 	 * Like the old updateEntity(), except more generic.
@@ -46,7 +67,7 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
 		if (this.numPlayersUsing > 0 && this.lidAngle == 0.0F) {
 			double d0 = (double) i + 0.5D;
 			double d1 = (double) k + 0.5D;
-			this.worldObj.playSoundEffect(d0, (double) j + 0.5D, d1, "random.chestopen", 0.5F,
+			this.worldObj.playSoundEffect(d0, (double) j + 0.5D, d1, "block.chest.open", 0.5F,
 					this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
 		}
 
@@ -66,7 +87,7 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
 			if (this.lidAngle < f1 && f2 >= f1) {
 				double d3 = (double) i + 0.5D;
 				double d2 = (double) k + 0.5D;
-				this.worldObj.playSoundEffect(d3, (double) j + 0.5D, d2, "random.chestclosed", 0.5F,
+				this.worldObj.playSoundEffect(d3, (double) j + 0.5D, d2, "block.chest.close", 0.5F,
 						this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
 			}
 

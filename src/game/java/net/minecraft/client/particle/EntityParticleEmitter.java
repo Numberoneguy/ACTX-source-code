@@ -32,10 +32,14 @@ public class EntityParticleEmitter extends EntityFX {
 	private EnumParticleTypes particleTypes;
 
 	public EntityParticleEmitter(World worldIn, Entity parEntity, EnumParticleTypes particleTypesIn) {
+		this(worldIn, parEntity, particleTypesIn, 3);
+	}
+
+	public EntityParticleEmitter(World worldIn, Entity parEntity, EnumParticleTypes particleTypesIn, int lifetimeIn) {
 		super(worldIn, parEntity.posX, parEntity.getEntityBoundingBox().minY + (double) (parEntity.height / 2.0F),
 				parEntity.posZ, parEntity.motionX, parEntity.motionY, parEntity.motionZ);
 		this.attachedEntity = parEntity;
-		this.lifetime = 3;
+		this.lifetime = lifetimeIn;
 		this.particleTypes = particleTypesIn;
 		this.onUpdate();
 	}

@@ -1,0 +1,59 @@
+# actx_misc.yml
+messages:
+  join: "§e%player%§e joined the game."
+  leave: "§e%player%§e left the game."
+  chat: "§r<%player%§r> %message%"
+
+bossbar:
+  enabled: false
+  preview: true
+  title: "§7§oThis is a boss bar you can customize. Only ActX players can see this."
+
+auth:
+  title: "§aWelcome Back!"
+  subtitle: "§7§oUse /login to play."
+
+tablist:
+  header:
+    - ""
+    - "%animation:actx%"
+    - ""
+    - "§7§l§o Version 1.8.0 "
+  footer:
+    - ""
+
+permissions:
+  op: []
+  banned: []
+
+passwords: {}
+
+custom_items: []
+
+profile:
+  names: []
+
+lan:
+  names: []
+
+restrictions:
+  blocked_commands: []
+
+scoreboards: {}
+
+animations:
+  actx:
+    change-interval: 250
+    frames:
+      - "§4[§7§oActX§4]"
+      - "§3[§7§oActX§4]"
+      - "§4[§3§oA§7§octX§4]"
+      - "§4[§7§oA§3§oc§7§otX§4]"
+      - "§4[§7§oAc§3§ot§7§oX§4]"
+      - "§4[§7§oAct§3§oX§4]"
+      - "§4[§7§oActX§3]"
+      - "§4[§7§oActX§4]"
+      - "§4[§7§oActX§4]"
+      - "§4[§7§oActX§4]"
+      - "§4[§7§oActX§4]"
+      - "§4[§7§oActX§4]"

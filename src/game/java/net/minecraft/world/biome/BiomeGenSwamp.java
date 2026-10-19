@@ -3,6 +3,7 @@ package net.minecraft.world.biome;
 import net.lax1dude.eaglercraft.v1_8.EaglercraftRandom;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
@@ -51,13 +52,24 @@ public class BiomeGenSwamp extends BiomeGenBase {
 		return this.worldGeneratorSwamp;
 	}
 
+	private static boolean swampColors() {
+		Minecraft mc = Minecraft.getMinecraft();
+		return mc == null || mc.gameSettings == null || mc.gameSettings.swampColorsOF;
+	}
+
 	public int getGrassColorAtPos(BlockPos blockpos) {
+		if (!swampColors()) {
+			return super.getGrassColorAtPos(blockpos);
+		}
 		double d0 = GRASS_COLOR_NOISE.func_151601_a((double) blockpos.getX() * 0.0225D,
 				(double) blockpos.getZ() * 0.0225D);
 		return d0 < -0.1D ? 5011004 : 6975545;
 	}
 
 	public int getFoliageColorAtPos(BlockPos var1) {
+		if (!swampColors()) {
+			return super.getFoliageColorAtPos(var1);
+		}
 		return 6975545;
 	}
 

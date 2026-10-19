@@ -34,6 +34,7 @@ public class GuiMiscLan extends GuiScreen {
     private static final String[] format_ins = { "&l","&o","&n","&m","&k","&r" };
 
     private static final String[][] all_symbols = {
+        // pulled from my old linux machine for this also.
         {"2605","star filled black"},{"2606","star outline white"},
         {"2736","star six pointed"},{"2734","star eight pointed"},
         {"2726","star four pointed black diamond"},{"272A","star circled"},
@@ -238,7 +239,7 @@ public class GuiMiscLan extends GuiScreen {
             int startY = contentY + 10;
             for (int i = 0; i < 16; i++) {
                 int col = i % 4, row = i / 4;
-                String localizedLabel = "\u00a7" + color_num[i] + I18n.format("gui.act.color." + color_keys[i]);
+                String localizedLabel = "§" + color_num[i] + I18n.format("gui.act.color." + color_keys[i]);
                 buttonList.add(new GuiButton(10 + i,
                     startX + col * (btnW + colGap),
                     startY + row * (btnH + rowGap),
@@ -294,9 +295,9 @@ public class GuiMiscLan extends GuiScreen {
     @Override
     public void drawScreen(int mx, int my, float partialTicks) {
         drawDefaultBackground();
-        drawCenteredString(fontRendererObj, "\u00a76" + I18n.format("itemGroup.misc"), width / 2, 12, 0xFFFFFF);
+        drawCenteredString(fontRendererObj, "§6" + I18n.format("itemGroup.misc"), width / 2, 12, 0xFFFFFF);
         drawCenteredString(fontRendererObj,
-            I18n.format("gui.act.misc.lanName") + "  \u00a77(" + I18n.format("gui.act.misc.lanNameHint") + ")", width / 2, 38, 0xAAAAAA);
+            I18n.format("gui.act.misc.lanName") + "  §7(" + I18n.format("gui.act.misc.lanNameHint") + ")", width / 2, 38, 0xAAAAAA);
         int tabW = 64, tabGap = 6;
         int totalTabW = 3 * tabW + 2 * tabGap;
         int tabStartX = centerX - totalTabW / 2;
@@ -335,8 +336,8 @@ public class GuiMiscLan extends GuiScreen {
         }
         motdM.appendTail(motdBuf);
         String preview = motdBuf.toString()
-            .replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "\u00a7$1");
-        drawCenteredString(fontRendererObj, "\u00a77" + I18n.format("gui.act.misc.preview") + ": \u00a7r" + preview,
+            .replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "§$1");
+        drawCenteredString(fontRendererObj, "§7" + I18n.format("gui.act.misc.preview") + ": §r" + preview,
             width / 2, height - 48, 0xFFFFFF);
         super.drawScreen(mx, my, partialTicks);
         symTooltip = "";
@@ -418,7 +419,7 @@ public class GuiMiscLan extends GuiScreen {
                 }
                 applyM.appendTail(applyBuf);
                 String formatted = applyBuf.toString()
-                    .replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "\u00a7$1");
+                    .replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "§$1");
                 GuiShareToLan.pendingLanName = formatted;
                 mc.displayGuiScreen(parent);
                 break;

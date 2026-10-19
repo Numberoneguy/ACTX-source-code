@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -84,6 +85,28 @@ public class S22PacketMultiBlockChange implements Packet<INetHandlerPlayClient> 
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleMultiBlockChange(this);
+	}
+
+	public S22PacketMultiBlockChange actxVanillaCopy() {
+		boolean changed = false;
+		for (int i = 0; i < this.changedBlocks.length; ++i) {
+			if (actxcompat.isCustomBlockState(this.changedBlocks[i].getBlockState())) {
+				changed = true;
+				break;
+			}
+		}
+		if (!changed) {
+			return this;
+		}
+		S22PacketMultiBlockChange copy = new S22PacketMultiBlockChange();
+		copy.chunkPosCoord = this.chunkPosCoord;
+		copy.changedBlocks = new S22PacketMultiBlockChange.BlockUpdateData[this.changedBlocks.length];
+		for (int i = 0; i < this.changedBlocks.length; ++i) {
+			S22PacketMultiBlockChange.BlockUpdateData data = this.changedBlocks[i];
+			copy.changedBlocks[i] = copy.new BlockUpdateData(data.func_180089_b(),
+					actxcompat.vanillaState(data.getBlockState()));
+		}
+		return copy;
 	}
 
 	public S22PacketMultiBlockChange.BlockUpdateData[] getChangedBlocks() {

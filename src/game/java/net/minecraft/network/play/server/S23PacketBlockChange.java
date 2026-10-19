@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -63,6 +64,16 @@ public class S23PacketBlockChange implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleBlockChange(this);
+	}
+
+	public S23PacketBlockChange actxVanillaCopy() {
+		if (!actxcompat.isCustomBlockState(this.blockState)) {
+			return this;
+		}
+		S23PacketBlockChange copy = new S23PacketBlockChange();
+		copy.blockPosition = this.blockPosition;
+		copy.blockState = actxcompat.vanillaState(this.blockState);
+		return copy;
 	}
 
 	public IBlockState getBlockState() {

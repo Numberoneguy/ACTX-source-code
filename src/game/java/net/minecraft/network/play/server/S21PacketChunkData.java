@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.google.common.collect.Lists;
 
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -76,6 +77,21 @@ public class S21PacketChunkData implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleChunkData(this);
+	}
+
+	public S21PacketChunkData actxVanillaCopy() {
+		byte[] replaced = actxcompat.vanillaChunkBlocks(this.extractedData.data, this.extractedData.dataSize);
+		if (replaced == this.extractedData.data) {
+			return this;
+		}
+		S21PacketChunkData copy = new S21PacketChunkData();
+		copy.chunkX = this.chunkX;
+		copy.chunkZ = this.chunkZ;
+		copy.field_149279_g = this.field_149279_g;
+		copy.extractedData = new S21PacketChunkData.Extracted();
+		copy.extractedData.dataSize = this.extractedData.dataSize;
+		copy.extractedData.data = replaced;
+		return copy;
 	}
 
 	public byte[] func_149272_d() {

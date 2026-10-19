@@ -60,6 +60,14 @@ public class PlatformInput {
 	private static int windowWidth = -1;
 	private static int windowHeight = -1;
 	private static float windowDPI = 1.0f;
+	private static float resolutionScale = 1.0f;
+	private static int rawWindowWidth = -1;
+	private static int rawWindowHeight = -1;
+	private static float rawWindowDPI = 1.0f;
+	private static int rawVisualViewportX = -1;
+	private static int rawVisualViewportY = -1;
+	private static int rawVisualViewportW = -1;
+	private static int rawVisualViewportH = -1;
 	private static int visualViewportX = -1;
 	private static int visualViewportY = -1;
 	private static int visualViewportW = -1;
@@ -541,46 +549,19 @@ public class PlatformInput {
 				JSWindowResizeEvent obj = evt.getEventObj();
 				int mask = obj.getEventTypeMask();
 				if((mask & EVENT_RESIZE_DPI) != 0) {
-					windowDPI = obj.getWindowDPI();
+					rawWindowDPI = obj.getWindowDPI();
 				}
 				if((mask & EVENT_RESIZE_WINDOW) != 0) {
-					windowWidth = obj.getWindowWidth();
-					windowHeight = obj.getWindowHeight();
-					if(!useVisualViewport) {
-						visualViewportX = 0;
-						visualViewportY = 0;
-						visualViewportW = windowWidth;
-						visualViewportH = windowHeight;
-					}
+					rawWindowWidth = obj.getWindowWidth();
+					rawWindowHeight = obj.getWindowHeight();
 				}
 				if((mask & EVENT_RESIZE_VISUAL_VIEWPORT) != 0) {
-					if(useVisualViewport) {
-						visualViewportX = obj.getVisualViewportX();
-						visualViewportY = obj.getVisualViewportY();
-						visualViewportW = obj.getVisualViewportW();
-						visualViewportH = obj.getVisualViewportH();
-						if(visualViewportW < 1) visualViewportW = 1;
-						if(visualViewportH < 1) visualViewportH = 1;
-						if(visualViewportX < 0) {
-							visualViewportW += visualViewportX;
-							visualViewportX = 0;
-						}else if(visualViewportX >= windowWidth) {
-							visualViewportX = windowWidth - 1;
-						}
-						if(visualViewportY < 0) {
-							visualViewportH += visualViewportY;
-							visualViewportY = 0;
-						}else if(visualViewportY >= windowHeight) {
-							visualViewportY = windowHeight - 1;
-						}
-						if((visualViewportX + visualViewportW) > windowWidth) {
-							visualViewportW = windowWidth - visualViewportX;
-						}
-						if((visualViewportY + visualViewportH) > windowHeight) {
-							visualViewportH = windowHeight - visualViewportY;
-						}
-					}
+					rawVisualViewportX = obj.getVisualViewportX();
+					rawVisualViewportY = obj.getVisualViewportY();
+					rawVisualViewportW = obj.getVisualViewportW();
+					rawVisualViewportH = obj.getVisualViewportH();
 				}
+				recomputeWindowSize();
 				break;
 			}
 			case EVENT_INPUT_GAMEPAD: {
@@ -1307,13 +1288,68 @@ public class PlatformInput {
 	}
 
 	static void initWindowSize(int sw, int sh, float dpi) {
-		windowWidth = sw;
-		windowHeight = sh;
-		windowDPI = dpi;
-		visualViewportX = 0;
-		visualViewportY = 0;
-		visualViewportW = sw;
-		visualViewportH = sh;
+		rawWindowWidth = sw;
+		rawWindowHeight = sh;
+		rawWindowDPI = dpi;
+		rawVisualViewportX = 0;
+		rawVisualViewportY = 0;
+		rawVisualViewportW = sw;
+		rawVisualViewportH = sh;
+		recomputeWindowSize();
+	}
+
+	public static void setResolutionScale(float scale) {
+		if(scale < 0.1f) scale = 0.1f;
+		if(scale > 1.0f) scale = 1.0f;
+		if(scale != resolutionScale) {
+			resolutionScale = scale;
+			recomputeWindowSize();
+		}
+	}
+
+	public static float getResolutionScale() {
+		return resolutionScale;
+	}
+
+	private static int scaleSize(int raw) {
+		return raw <= 0 ? raw : Math.max(1, Math.round(raw * resolutionScale));
+	}
+
+	private static void recomputeWindowSize() {
+		windowDPI = rawWindowDPI * resolutionScale;
+		windowWidth = scaleSize(rawWindowWidth);
+		windowHeight = scaleSize(rawWindowHeight);
+		if(!useVisualViewport) {
+			visualViewportX = 0;
+			visualViewportY = 0;
+			visualViewportW = windowWidth;
+			visualViewportH = windowHeight;
+		}else {
+			visualViewportX = Math.round(rawVisualViewportX * resolutionScale);
+			visualViewportY = Math.round(rawVisualViewportY * resolutionScale);
+			visualViewportW = scaleSize(rawVisualViewportW);
+			visualViewportH = scaleSize(rawVisualViewportH);
+			if(visualViewportW < 1) visualViewportW = 1;
+			if(visualViewportH < 1) visualViewportH = 1;
+			if(visualViewportX < 0) {
+				visualViewportW += visualViewportX;
+				visualViewportX = 0;
+			}else if(visualViewportX >= windowWidth) {
+				visualViewportX = windowWidth - 1;
+			}
+			if(visualViewportY < 0) {
+				visualViewportH += visualViewportY;
+				visualViewportY = 0;
+			}else if(visualViewportY >= windowHeight) {
+				visualViewportY = windowHeight - 1;
+			}
+			if((visualViewportX + visualViewportW) > windowWidth) {
+				visualViewportW = windowWidth - visualViewportX;
+			}
+			if((visualViewportY + visualViewportH) > windowHeight) {
+				visualViewportH = windowHeight - visualViewportY;
+			}
+		}
 	}
 
 }

@@ -225,6 +225,8 @@ import net.optifine.Config;
  * 
  */
 public class Minecraft implements IThreadListener {
+	private static final int max_catchup_ticks = 4;
+	private static final int unfocused_fps = 15;
 	private static final Logger logger = LogManager.getLogger();
 	private static final ResourceLocation locationMojangPng = new ResourceLocation("textures/gui/title/mojang.png");
 	public static final boolean isRunningOnMac = false;
@@ -869,9 +871,10 @@ public class Minecraft implements IThreadListener {
 
 		long l = EagRuntime.nanoTime();
 
-		for (int j = 0; j < this.timer.elapsedTicks; ++j) {
+		int ticksToRun = Math.min(this.timer.elapsedTicks, max_catchup_ticks);
+		for (int j = 0; j < ticksToRun; ++j) {
 			this.runTick();
-			if (j < this.timer.elapsedTicks - 1) {
+			if (j < ticksToRun - 1) {
 				PointerInputAbstraction.runGameLoop();
 			}
 		}
@@ -929,12 +932,13 @@ public class Minecraft implements IThreadListener {
 	}
 
 	public void updateDisplay() {
+		boolean unfocused = this.isUnfocusedThrottled();
 		if (Display.isVSyncSupported()) {
-			Display.setVSync(this.gameSettings.enableVsync);
+			Display.setVSync(this.gameSettings.enableVsync && !unfocused);
 		} else {
 			this.gameSettings.enableVsync = false;
 		}
-		if (!this.gameSettings.enableVsync && this.isFramerateLimitBelowMax()) {
+		if ((!this.gameSettings.enableVsync || unfocused) && this.isFramerateLimitBelowMax()) {
 			Display.update(this.getLimitFramerate());
 		} else {
 			Display.update(0);
@@ -967,8 +971,13 @@ public class Minecraft implements IThreadListener {
 
 	}
 
+	private boolean isUnfocusedThrottled() {
+		return !Display.isActive() && !PointerInputAbstraction.isTouchMode();
+	}
+
 	public int getLimitFramerate() {
-		return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
+		int limit = this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
+		return this.isUnfocusedThrottled() ? Math.min(limit, unfocused_fps) : limit;
 	}
 
 	public boolean isFramerateLimitBelowMax() {
@@ -1026,11 +1035,6 @@ public class Minecraft implements IThreadListener {
 	}
 
 	private void sendClickBlockToController(boolean leftClick) {
-		// WORLDEDIT HOOK: Completely disable continuous block destruction/mining
-		if (net.minecraft.client.WorldEditInit.handleMouseClick(0)) {
-			return;
-		}
-		
 		if (!leftClick) {
 			this.leftClickCounter = 0;
 		}
@@ -1052,10 +1056,6 @@ public class Minecraft implements IThreadListener {
 	}
 
 	private void clickMouse() {
-		if (net.minecraft.client.WorldEditInit.handleMouseClick(0)) {
-			return;
-		}
-		
 		if (this.leftClickCounter <= 0) {
 			this.thePlayer.swingItem();
 			if (this.objectMouseOver == null) {
@@ -1068,6 +1068,7 @@ public class Minecraft implements IThreadListener {
 				switch (this.objectMouseOver.typeOfHit) {
 				case ENTITY:
 					this.playerController.attackEntity(this.thePlayer, this.objectMouseOver.entityHit);
+					net.minecraft.actx.server.actxcooldown.reset();
 					break;
 				case BLOCK:
 					BlockPos blockpos = this.objectMouseOver.getBlockPos();
@@ -1077,6 +1078,7 @@ public class Minecraft implements IThreadListener {
 					}
 				case MISS:
 				default:
+					net.minecraft.actx.server.actxcooldown.reset();
 					if (this.playerController.isNotCreative()) {
 						this.leftClickCounter = 10;
 					}
@@ -1099,54 +1101,6 @@ public class Minecraft implements IThreadListener {
 				} else if (this.playerController.interactWithEntitySendPacket(this.thePlayer, this.objectMouseOver.entityHit)) {
 					return;
 				}
-			}
-		}
-		// WORLDEDIT BRUSH INTERACTION HOOK
-		if (this.thePlayer != null && this.objectMouseOver != null && this.objectMouseOver.typeOfHit == net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK) {
-			String pKey = this.thePlayer.getUniqueID().toString();
-			if (net.minecraft.command.WorldEditCommand.activeBrushes.containsKey(pKey)) {
-				net.minecraft.command.WorldEditCommand.BrushSettings brush = net.minecraft.command.WorldEditCommand.activeBrushes.get(pKey);
-				net.minecraft.util.BlockPos center = this.objectMouseOver.getBlockPos();
-				net.minecraft.world.World world = this.thePlayer.worldObj;
-				java.util.List<net.minecraft.command.WorldEditCommand.BlockChange> brushChanges = new java.util.ArrayList<>();
-				net.minecraft.block.Block currentMask = net.minecraft.command.WorldEditCommand.playerMasks.get(pKey);
-
-				if ("sphere".equals(brush.type)) {
-					int rad = brush.radius;
-					for (int x = -rad; x <= rad; x++) {
-						for (int y = -rad; y <= rad; y++) {
-							for (int z = -rad; z <= rad; z++) {
-								if (x * x + y * y + z * z <= rad * rad) {
-									net.minecraft.util.BlockPos bp = center.add(x, y, z);
-									net.minecraft.block.Block targetB = world.getBlockState(bp).getBlock();
-									
-									// Respect mask settings if applicable
-									if (currentMask == null || targetB == currentMask) {
-										brushChanges.add(new net.minecraft.command.WorldEditCommand.BlockChange(bp, world.getBlockState(bp), brush.state));
-										world.setBlockState(bp, brush.state, 3);
-									}
-								}
-							}
-						}
-					}
-					// Support standard undo systems for brushes seamlessly
-					if (!brushChanges.isEmpty()) {
-						if (!net.minecraft.command.WorldEditCommand.undoHistory.containsKey(pKey)) {
-							net.minecraft.command.WorldEditCommand.undoHistory.put(pKey, new java.util.Stack<>());
-						}
-						net.minecraft.command.WorldEditCommand.undoHistory.get(pKey).push(brushChanges);
-					}
-					this.thePlayer.swingItem();
-					this.rightClickDelayTimer = 4; // Set delay to prevent unintentonal rapid-fire placement
-					return; // Intercept vanilla interaction completely while brush is bound
-				}
-			}
-		}
-
-		// WORLDEDIT HOOK: Intercept right-click for Pos 2 ONLY when clicking a block
-		if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit == net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK) {
-			if (net.minecraft.client.WorldEditInit.handleMouseClick(1)) {
-				return;
 			}
 		}
 

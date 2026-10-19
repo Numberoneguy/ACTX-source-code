@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.actx.server.actxcompat;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -78,6 +79,26 @@ public class S30PacketWindowItems implements Packet<INetHandlerPlayClient> {
 	 */
 	public void processPacket(INetHandlerPlayClient inethandlerplayclient) {
 		inethandlerplayclient.handleWindowItems(this);
+	}
+
+	public S30PacketWindowItems actxVanillaCopy() {
+		boolean changed = false;
+		for (int i = 0; i < this.itemStacks.length; ++i) {
+			if (this.itemStacks[i] != null && actxcompat.isCustomItem(this.itemStacks[i].getItem())) {
+				changed = true;
+				break;
+			}
+		}
+		if (!changed) {
+			return this;
+		}
+		S30PacketWindowItems copy = new S30PacketWindowItems();
+		copy.windowId = this.windowId;
+		copy.itemStacks = new ItemStack[this.itemStacks.length];
+		for (int i = 0; i < this.itemStacks.length; ++i) {
+			copy.itemStacks[i] = actxcompat.stackForClient(this.itemStacks[i], false);
+		}
+		return copy;
 	}
 
 	public int func_148911_c() {

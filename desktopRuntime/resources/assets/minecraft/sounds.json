@@ -2021,5 +2021,25 @@
         "stream": true
       }
     ]
+  },
+  "block.shulker_box.close": {
+    "category": "block",
+    "sounds": [
+      "block/shulker_box/close",
+      "block/shulker_box/open"
+    ]
+  },
+  "block.shulker_box.open": {
+    "category": "block",
+    "sounds": [
+      "block/shulker_box/close",
+      "block/shulker_box/open"
+    ]
+  },
+  "random.use_totem": {
+    "category": "block",
+    "sounds": [
+      "random/use_totem"
+    ]
   }
 }

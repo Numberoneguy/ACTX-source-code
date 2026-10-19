@@ -31,6 +31,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.data.AnimationMetadataSection;
 import net.minecraft.client.resources.data.TextureMetadataSection;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.MathHelper;
@@ -68,6 +69,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 	public static final ResourceLocation LOCATION_MISSING_TEXTURE = new ResourceLocation("missingno");
 	public static final ResourceLocation locationBlocksTexture = new ResourceLocation("textures/atlas/blocks.png");
 	private final List<EaglerTextureAtlasSprite> listAnimatedSprites;
+	private final List<EaglerTextureAtlasSprite> activeAnimatedSprites = Lists.newArrayList();
 	private final Map<String, EaglerTextureAtlasSprite> mapRegisteredSprites;
 	private final Map<String, EaglerTextureAtlasSprite> mapUploadedSprites;
 	private final String basePath;
@@ -540,32 +542,63 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 		return textureatlassprite;
 	}
 
+	private List<EaglerTextureAtlasSprite> getActiveAnimatedSprites() {
+		GameSettings gs = Minecraft.getMinecraft().gameSettings;
+		if (gs == null) {
+			return this.listAnimatedSprites;
+		}
+		this.activeAnimatedSprites.clear();
+		for (int i = 0, l = this.listAnimatedSprites.size(); i < l; ++i) {
+			EaglerTextureAtlasSprite sprite = this.listAnimatedSprites.get(i);
+			if (isAnimationEnabled(gs, sprite.getIconName())) {
+				this.activeAnimatedSprites.add(sprite);
+			}
+		}
+		return this.activeAnimatedSprites;
+	}
+
+	private static boolean isAnimationEnabled(GameSettings gs, String name) {
+		if (name.endsWith("blocks/water_still") || name.endsWith("blocks/water_flow")) {
+			return gs.waterAnimatedOF;
+		} else if (name.endsWith("blocks/lava_still") || name.endsWith("blocks/lava_flow")) {
+			return gs.lavaAnimatedOF;
+		} else if (name.contains("blocks/fire_layer_")) {
+			return gs.fireAnimatedOF;
+		} else if (name.endsWith("blocks/portal")) {
+			return gs.portalAnimatedOF;
+		} else if (name.contains("/items/") || name.startsWith("builtin/")) {
+			return gs.texturesAnimatedOF;
+		}
+		return gs.terrainAnimatedOF;
+	}
+
 	public void updateAnimations() {
+		List<EaglerTextureAtlasSprite> sprites = this.getActiveAnimatedSprites();
 		if (isEaglerPBRMode) {
-			for (int j = 0, l = this.listAnimatedSprites.size(); j < l; ++j) {
-				this.listAnimatedSprites.get(j).updateAnimationPBR();
+			for (int j = 0, l = sprites.size(); j < l; ++j) {
+				sprites.get(j).updateAnimationPBR();
 			}
 			for (int i = 0; i < copyColorFramebuffer.length; ++i) {
 				int w = width >> i;
 				int h = height >> i;
 				_wglBindFramebuffer(_GL_FRAMEBUFFER, copyColorFramebuffer[i]);
 				GlStateManager.viewport(0, 0, w, h);
-				for (int j = 0, l = this.listAnimatedSprites.size(); j < l; ++j) {
-					this.listAnimatedSprites.get(j).copyAnimationFramePBR(0, w, h, i);
+				for (int j = 0, l = sprites.size(); j < l; ++j) {
+					sprites.get(j).copyAnimationFramePBR(0, w, h, i);
 				}
 				_wglBindFramebuffer(_GL_FRAMEBUFFER, copyMaterialFramebuffer[i]);
 				h <<= 1;
 				GlStateManager.viewport(0, 0, w, h);
-				for (int j = 0, l = this.listAnimatedSprites.size(); j < l; ++j) {
-					this.listAnimatedSprites.get(j).copyAnimationFramePBR(1, w, h, i);
+				for (int j = 0, l = sprites.size(); j < l; ++j) {
+					sprites.get(j).copyAnimationFramePBR(1, w, h, i);
 				}
 			}
 			_wglBindFramebuffer(_GL_FRAMEBUFFER, null);
 			return;
 		}
 
-		for (int j = 0, l = this.listAnimatedSprites.size(); j < l; ++j) {
-			this.listAnimatedSprites.get(j).updateAnimation();
+		for (int j = 0, l = sprites.size(); j < l; ++j) {
+			sprites.get(j).updateAnimation();
 		}
 
 		for (int i = 0; i < copyColorFramebuffer.length; ++i) {
@@ -573,8 +606,8 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 			int h = height >> i;
 			_wglBindFramebuffer(_GL_FRAMEBUFFER, copyColorFramebuffer[i]);
 			GlStateManager.viewport(0, 0, w, h);
-			for (int j = 0, l = this.listAnimatedSprites.size(); j < l; ++j) {
-				this.listAnimatedSprites.get(j).copyAnimationFrame(w, h, i);
+			for (int j = 0, l = sprites.size(); j < l; ++j) {
+				sprites.get(j).copyAnimationFrame(w, h, i);
 			}
 		}
 

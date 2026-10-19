@@ -1,5 +1,6 @@
 package net.minecraft.world.biome;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
@@ -59,15 +60,33 @@ public class BiomeColorHelper {
 		return (i / 9 & 255) << 16 | (j / 9 & 255) << 8 | k / 9 & 255;
 	}
 
+	private static boolean smoothBiomes() {
+		Minecraft mc = Minecraft.getMinecraft();
+		return mc == null || mc.gameSettings == null || mc.gameSettings.smoothBiomesOF;
+	}
+
+	private static int singleBiomeColor(IBlockAccess access, BlockPos pos, BiomeColorHelper.ColorResolver resolver) {
+		return resolver.getColorAtPos(access.getBiomeGenForCoords(pos), pos);
+	}
+
 	public static int getGrassColorAtPos(IBlockAccess parIBlockAccess, BlockPos parBlockPos) {
+		if (!smoothBiomes()) {
+			return singleBiomeColor(parIBlockAccess, parBlockPos, field_180291_a);
+		}
 		return parIBlockAccess.getBiomeColorForCoords(parBlockPos, 0);
 	}
 
 	public static int getFoliageColorAtPos(IBlockAccess parIBlockAccess, BlockPos parBlockPos) {
+		if (!smoothBiomes()) {
+			return singleBiomeColor(parIBlockAccess, parBlockPos, field_180289_b);
+		}
 		return parIBlockAccess.getBiomeColorForCoords(parBlockPos, 1);
 	}
 
 	public static int getWaterColorAtPos(IBlockAccess parIBlockAccess, BlockPos parBlockPos) {
+		if (!smoothBiomes()) {
+			return singleBiomeColor(parIBlockAccess, parBlockPos, field_180290_c);
+		}
 		return parIBlockAccess.getBiomeColorForCoords(parBlockPos, 2);
 	}
 

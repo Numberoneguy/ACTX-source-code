@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 
 import net.lax1dude.eaglercraft.v1_8.minecraft.EaglerTextureAtlasSprite;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockShulkerBox;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockCactus;
 import net.minecraft.block.BlockColored;
@@ -115,6 +116,11 @@ public class BlockModelShapes {
 				return this.modelManager.getTextureMap().getAtlasSprite("minecraft:blocks/water_still");
 			}
 
+			if (block instanceof BlockShulkerBox) {
+				return this.modelManager.getTextureMap().getAtlasSprite(
+						"minecraft:blocks/wool_colored_" + ((BlockShulkerBox) block).getColor().getName());
+			}
+
 			if (block == Blocks.skull) {
 				return this.modelManager.getTextureMap().getAtlasSprite("minecraft:blocks/soul_sand");
 			}
@@ -167,6 +173,7 @@ public class BlockModelShapes {
 				Blocks.lava, Blocks.piston_extension, Blocks.chest, Blocks.ender_chest, Blocks.trapped_chest,
 				Blocks.standing_sign, Blocks.skull, Blocks.end_portal, Blocks.barrier, Blocks.wall_sign,
 				Blocks.wall_banner, Blocks.standing_banner });
+		this.registerBuiltInBlocks(BlockShulkerBox.getAllBoxes());
 		this.registerBlockWithStateMapper(Blocks.stone, (new StateMap.Builder()).withName(BlockStone.VARIANT).build());
 		this.registerBlockWithStateMapper(Blocks.prismarine,
 				(new StateMap.Builder()).withName(BlockPrismarine.VARIANT).build());

@@ -9,32 +9,25 @@ import net.minecraft.actx.data_o_algo.actxmiscdata;
 import java.util.List;
 
 public class GuiSavedLanNames extends GuiScreen {
-
     private static final int cancel  = 0;
     private static final int done    = 1;
     private static final int delete  = 2;
-
     private static final int ENTRY_H = 24;
-
     private final GuiScreen parent;
     private final boolean profileMode;
     private int selectedIndex = -1;
     private int scrollOffset  = 0;
     private int listTop, listBottom;
-
     public GuiSavedLanNames(GuiScreen parent) {
         this(parent, false);
     }
-
     public GuiSavedLanNames(GuiScreen parent, boolean profileMode) {
         this.parent = parent;
         this.profileMode = profileMode;
     }
-
     private List<String> savedNames() {
         return profileMode ? actxmiscdata.getSavedProfileNames() : actxmiscdata.getSavedLanNames();
     }
-
     private void removeSaved(int index) {
         if (profileMode) {
             actxmiscdata.removeSavedProfileName(index);
@@ -42,23 +35,19 @@ public class GuiSavedLanNames extends GuiScreen {
             actxmiscdata.removeSavedLanName(index);
         }
     }
-
     @Override
     public void initGui() {
         buttonList.clear();
         listTop    = 32;
         listBottom = height - 48;
-
         int btnY  = height - 26;
         int btnW  = 150;
         int gap   = 4;
         int totalW = btnW * 2 + gap;
         int startX = width / 2 - totalW / 2;
-
-        buttonList.add(new GuiButton(delete, 4, btnY, 70, 20, "\u00a7c" + I18n.format("gui.act.delete")));
+        buttonList.add(new GuiButton(delete, 4, btnY, 70, 20, "§c" + I18n.format("gui.act.delete")));
         buttonList.add(new GuiButton(cancel, startX,          btnY, btnW, 20, I18n.format("gui.cancel")));
         buttonList.add(new GuiButton(done,   startX + btnW + gap, btnY, btnW, 20, I18n.format("gui.done")));
-
         updateButtonStates();
     }
 
@@ -74,7 +63,7 @@ public class GuiSavedLanNames extends GuiScreen {
                 List<String> savedNamesForDone = savedNames();
                 if (selectedIndex >= 0 && selectedIndex < savedNamesForDone.size()) {
                     String stored = savedNamesForDone.get(selectedIndex);
-                    String editable = stored.replace("\u00a7", "&");
+                    String editable = stored.replace("u00a7", "&");
                     if (parent instanceof GuiMiscLan) {
                         ((GuiMiscLan) parent).nameField.setText(editable);
                     } else if (parent instanceof GuiScreenAdvancedProfile) {
@@ -105,7 +94,7 @@ public class GuiSavedLanNames extends GuiScreen {
         drawDefaultBackground();
 
         drawCenteredString(fontRendererObj,
-            "\u00a7f" + I18n.format(profileMode ? "gui.act.misc.savedProfileNames" : "gui.act.misc.savedLanNames"), width / 2, 10, 0xFFFFFF);
+            "§f" + I18n.format(profileMode ? "gui.act.misc.savedProfileNames" : "gui.act.misc.savedLanNames"), width / 2, 10, 0xFFFFFF);
 
         drawRect(0, listTop - 2, width, listTop - 1, 0x55FFFFFF);
 
@@ -113,7 +102,7 @@ public class GuiSavedLanNames extends GuiScreen {
 
         if (savedNames.isEmpty()) {
             drawCenteredString(fontRendererObj,
-                "\u00a77" + I18n.format("gui.act.misc.noSavedNames"),
+                "§7" + I18n.format("gui.act.misc.noSavedNames"),
                 width / 2, (listTop + listBottom) / 2 - 4, 0xFFFFFF);
             drawBottomStrip(mx, my, partialTicks);
             return;
@@ -143,7 +132,7 @@ public class GuiSavedLanNames extends GuiScreen {
             }
 
             String raw     = savedNames.get(i);
-            String display = raw.replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "\u00a7$1");
+            String display = raw.replaceAll("&([0-9a-fA-FlLoOnNkKmMrR])", "§$1");
             drawCenteredString(fontRendererObj,
                 display, width / 2, rowY + (ENTRY_H - 8) / 2, 0xFFFFFF);
         }
@@ -169,12 +158,12 @@ public class GuiSavedLanNames extends GuiScreen {
         String infoText;
         if (selectedIndex >= 0 && selectedIndex < savedNames.size()) {
             String stored   = savedNames.get(selectedIndex);
-            String rawForm  = stored.replace("\u00a7", "&");
+            String rawForm  = stored.replace("§", "&");
             int maxLen      = (width - 20) / 6;
             if (rawForm.length() > maxLen) rawForm = rawForm.substring(0, maxLen - 3) + "...";
-            infoText = "\u00a7f" + I18n.format("gui.act.misc.raw") + ": \u00a7f" + rawForm;
+            infoText = "§f" + I18n.format("gui.act.misc.raw") + ": §f" + rawForm;
         } else {
-            infoText = "\u00a7f" + I18n.format("gui.act.misc.selectName");
+            infoText = "§f" + I18n.format("gui.act.misc.selectName");
         }
         drawCenteredString(fontRendererObj, infoText,
             width / 2, listBottom + 4, 0xFFFFFF);

@@ -69,8 +69,12 @@ public class ItemBlock extends Item {
 			int i = this.getMetadata(itemstack.getMetadata());
 			IBlockState iblockstate1 = this.block.onBlockPlaced(world, blockpos, enumfacing, f, f1, f2, i,
 					entityplayer);
+			Block prevblock = world.getBlockState(blockpos).getBlock();
 			if (world.setBlockState(blockpos, iblockstate1, 3)) {
 				iblockstate1 = world.getBlockState(blockpos);
+				if (world.isRemote) {
+					net.minecraft.actx.server.actxviablocks.remember(blockpos, iblockstate1, prevblock);
+				}
 				if (iblockstate1.getBlock() == this.block) {
 					setTileEntityNBT(world, entityplayer, blockpos, itemstack);
 					this.block.onBlockPlacedBy(world, blockpos, iblockstate1, entityplayer, itemstack);

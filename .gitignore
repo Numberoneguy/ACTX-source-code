@@ -5,6 +5,7 @@
 bin
 /build
 /target_*/build
+/target_*/epk_src
 /desktopRuntime/_eagstorage*
 /desktopRuntime/eclipseProject/bin*
 /desktopRuntime/hs_err_*

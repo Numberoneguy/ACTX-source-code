@@ -96,7 +96,7 @@ public enum HighPolySkin {
 			new ResourceLocation[] {},                                                  
 			new float[] {},                                         
 			0.0f,                                                    
-			new ResourceLocation("eagler:mesh/cartman_stitched.png")        
+			new ResourceLocation("eagler:mesh/cartman_fallback.png")        
 	);
 	public static float highPolyScale = 0.5f;
 
